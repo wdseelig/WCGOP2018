@@ -1,0 +1,91 @@
+<?php
+/**
+ * Implements hook_commerce_checkout_pane_info()
+ */
+function commerce_gopcheckout_commerce_checkout_pane_info() {
+  $panes['commerce_gopcheckout'] = array(
+    'title' => t('GOP Checkout On January 20'),
+    'page' => 'checkout',
+    'weight' => 10,
+    'base' => 'commerce_gopcheckout_pane',
+  );
+  return $panes;
+}
+function commerce_gopcheckout_form_commerce_checkout_form_alter(&$form,&$form_state,$form_id)
+{
+	variable_set("aaa5","Made it into the form alter routine");
+	switch($form_id){
+		case 'commerce_checkout_form_checkout':
+		$form['body'] = array(
+			'#markup' => '<p><h3>Federal and state law require us to collect this information.  Please fill in the form below and then proceed to the payment process by clicking on the Continue to Payment button at the bottom of the form</h3></p>',
+			'#weight' => '0'
+			);
+		variable_set ("aaa6","Made it into the commerce_checkout_form_checkout case");
+		$statesarray = array (
+		  'visible' => array (
+		     ':input[name="customer_profile_billing[field_gopstoreemployed][und]"]' => array('value' => '1')
+		     )
+		     ); 
+		$form['customer_profile_billing']['field_gopstoreemployer']['#states'] = $statesarray;
+		$form['customer_profile_billing']['field_gopstoremyemployeraddress']['#states'] = $statesarray;
+			$form['buttons']['continue']['#value'] = 'Continue to Next Step';
+		break;
+		case 'commerce_checkout_form_review' :
+			$form['buttons']['continue']['#value'] = "Make Payment";
+			break;
+	}
+	return;
+}
+function commerce_gopcheckout_form_alter(&$form,&$form_state,$form_id) {
+	variable_set("aaa9","Made it into the commerce_add_to_cart_form_alter routine");
+	
+	global $user;
+
+// Load cart order
+	$order = commerce_cart_order_load($user->uid);
+	if ($order)  {
+  // Let's use the wrapper because it rocks
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+  	$line_item = $line_item_wrapper->value();
+    }
+}
+	
+	$addcartform = substr($form_id,0,30);
+	switch ($addcartform) {
+		case 'commerce_cart_add_to_cart_form':
+			variable_set("aaa10","Made it into the add to cart form case");
+	//		$form['submit']['#type'] = 'image_button';
+	//		$form['submit']['#src'] = 'files/buttons/AddToCartBlue.png';
+			$form['attributes']['field_menuchoice']['#default_value'] = "4";
+			$form['attributes']['field_receptionmenu']['#default_value'] = "4";
+			$form['attributes']['field_sponsoroption']['#default_value'] = "4";
+//		kpr($form);
+			break;
+	}
+	switch ($form_id) {
+			case 'views_form_commerce_cart_form_default':
+//				$form['actions']['checkout']['#type'] = 'image_button';
+//				$form['actions']['checkout']['#src'] = 'files/buttons/CheckoutButtonDarkBlue.png';
+//				$form['actions']['checkout']['#name'] = 'op';
+//				$form['actions']['submit']['#value'] = 'UPDATE CART';
+				break;
+				case 'commerce_checkout_form_complete':
+				$form['checkout_completion_message']['message']['#markup'] = '<p>Thank you for your order!  We are looking forward to seeing you at our Lincoln Day Dinner.</p>';
+//				kpr ($form);
+//				kpr ($form_state);
+				break;
+	}
+//	kpr ($form);
+	return;
+}
+function commerce_gopcheckout_commerce_email_order_items($variables) {
+
+  // Get order wrapper.
+  $order_wrapper = $variables['commerce_order_wrapper'];
+
+  // Get rendered view.
+  return views_embed_view('commerce_cart_summary', 'default', $order_wrapper->getIdentifier());
+}
+
+?>

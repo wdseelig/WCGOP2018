@@ -1,0 +1,70 @@
+<?php
+
+/**
+  *	Implements hook_install
+*/
+
+	function volunteertimeslots_install () {
+	
+	}
+	
+	/**
+	  *	Implements hook_uninstall
+*/
+
+	function volunteertimeslots_uninstall () {
+	
+	}
+
+/**
+	*	Implements hook_schema
+	*/
+	
+	function volunteertimeslots_schema () {
+	
+	$schema['volunteertimeslots_slotdata'] = array(
+  'description' => 'This table holds the volunteer data',
+  'fields' => array(
+    'tblrowID' => array(
+      'description' => 'The table row is used to the data',
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'eventID' => array(
+      'description' => 'The event to which this volunteer data applies',
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'eventDay' => array(
+      'description' => 'The day within the event for this slot',
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'slotstart' => array(
+      'description' => 'The time that this slot begins',
+      'type' => 'varchar',
+      'length' => '10',
+      'not null' => TRUE,
+    ),
+    'slotend' => array(
+      'description' => 'The time that this slot ends',
+      'type' => 'varchar',
+      'length' => '10',
+      'not null' => TRUE,
+    ),
+    'vsnumber' => array(
+      'description' => 'The slot for which this volunteer has volunteered',
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'handle' => array(
+      'description' => 'The identifier for the individual volunteer',
+      'type' => 'text',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('tblrowID'),
+);
+
+	return $schema;
+	}

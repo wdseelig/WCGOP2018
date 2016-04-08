@@ -1,0 +1,8 @@
+name = Volunteer Time Slots
+description = "Allow people who wish to do so to volunteer for tasks at our events"
+package = WCGOP
+core = 7.x
+dependencies[] = views
+files[] = volunteertimeslots.module
+files[] = volunteertimeslots.views.inc
+
