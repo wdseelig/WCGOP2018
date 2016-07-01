@@ -7,8 +7,7 @@
 	function volunteertimeslots_install () {
 	
 	}
-	
-	/**
+/**
 	  *	Implements hook_uninstall
 */
 
@@ -21,50 +20,81 @@
 	*/
 	
 	function volunteertimeslots_schema () {
-	
-	$schema['volunteertimeslots_slotdata'] = array(
-  'description' => 'This table holds the volunteer data',
-  'fields' => array(
-    'tblrowID' => array(
-      'description' => 'The table row is used to the data',
-      'type' => 'serial',
-      'not null' => TRUE,
+	$schema = array();
+	$schema['vtsentity_vtsintervals'] = array(
+    'description' => 'The base table for the vtsinterval entity',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the vtsinterval entity',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'timestart' => array(
+        'description' => 'Start time for this interval',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => FALSE,
+      ),
+      'timeend' => array(
+        'description' => 'End time for this interval',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => FALSE,
+        'default' => NULL
+      ),
+      'EventID' => array(
+        'description' => 'The event with which this interval is associated (a node id)',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => FALSE,
+        'default'=> NULL
+      ),
+      'EventDay'=>array(
+          'description' =>'The day within the event with which this interval is associated (another node id)',
+          'type'=>'int',
+          'length'=>11,
+          'not null'=> FALSE,
+          'default' => NULL
+           ),
+        'handle1'=>array(
+            'description' => 'The first handle',
+            'type' => 'text',
+            'length' => 30,
+            'not null' => FALSE,
+            'default' => NULL
+        ),
+        'handle2'=>array(
+            'description' => 'The second handle',
+            'type' => 'text',
+            'length' => 30,
+            'not null' => FALSE,
+            'default' => NULL
+        ),
+        'handle3'=>array(
+            'description' => 'The third handle',
+            'type' => 'text',
+            'length' => 30,
+            'not null' => FALSE,
+            'default' => NULL
+        ),
+        'handle4'=>array(
+            'description' => 'The fourth handle',
+            'type' => 'text',
+            'length' => 30,
+            'not null' => FALSE,
+            'default' => NULL
+        ),
+        'handle5'=>array(
+            'description' => 'The fifth handle',
+            'type' => 'text',
+            'length' => 30,
+            'not null' => FALSE,
+            'default' => NULL
+        ),
     ),
-    'eventID' => array(
-      'description' => 'The event to which this volunteer data applies',
-      'type' => 'int',
-      'not null' => TRUE,
-    ),
-    'eventDay' => array(
-      'description' => 'The day within the event for this slot',
-      'type' => 'int',
-      'not null' => TRUE,
-    ),
-    'slotstart' => array(
-      'description' => 'The time that this slot begins',
-      'type' => 'varchar',
-      'length' => '10',
-      'not null' => TRUE,
-    ),
-    'slotend' => array(
-      'description' => 'The time that this slot ends',
-      'type' => 'varchar',
-      'length' => '10',
-      'not null' => TRUE,
-    ),
-    'vsnumber' => array(
-      'description' => 'The slot for which this volunteer has volunteered',
-      'type' => 'int',
-      'not null' => TRUE,
-    ),
-    'handle' => array(
-      'description' => 'The identifier for the individual volunteer',
-      'type' => 'text',
-      'not null' => TRUE,
-    ),
-  ),
-  'primary key' => array('tblrowID'),
-);
-
-	return $schema;
-	}
+    'primary key' => array('id'),
+  );
+  
+  return $schema;
+}
