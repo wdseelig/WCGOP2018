@@ -165,7 +165,11 @@ function volunteertimeslots_views_api() {
                 $vtshdr .= $gourl . '</div>';
             }
             $vtsnickname = '<div class = vtstopnickname>';
-            $vtsnickname .= 'Nickname:   ' . $vtsusrobj->handle . '</div>';
+            if ( $vtsusrobj->handle != ''){
+                $vtsnickname .= 'Nickname:   ' . $vtsusrobj->handle . '</div>';
+            } else {
+                $vtsnickname .= 'You need to tell us who you are before you can volunteer. <p> Please click on the Connect link to sign in to the system.</p>';
+            }
             $vtstoplinks['connect'] = $vtshdr;
             $vtstoplinks['nickname'] = $vtsnickname;
 
