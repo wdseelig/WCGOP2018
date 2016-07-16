@@ -212,17 +212,22 @@ function volunteertimeslots_ajax_callback($type='ajax')  {
 function vts_addslots($arg1) {
 	$node = node_load($arg1);
 	$output = '';
-	$eventID = field_get_items('node',$node,'field_vtsevent')[0]['target_id'];
- 	$startTime = field_get_items('node',$node,'field_vtsstarttime')[0]['value'];
- 	$endTime = field_get_items('node',$node,'field_vtsendtime')[0]['value'];
- 	$numVolSlots = field_get_items('node',$node,'field_vtsslots')[0]['value'];
- 	$slotTimeInterval = field_get_items('node',$node,'field_vtsinterval')[0]['value'];
-	$output	= '<br><h2>I am in the addslots routine with an argument of ' . $arg1;
-	$output .= '<br>The event is ' .  $eventID;
-	$output .= '<br>The start time is:  ' . $startTime;
-	$output .= '<br>The end time is ' . $endTime;
-	$output .= '<br>The number of slots is ' . $numVolSlots;
-	$output .= '<br>The slot interval is: ' . $slotTimeInterval;
+		$eventIDarr = field_get_items('node',$node,'field_vtsevent');
+		$eventID = $eventIDarr[0]['target_id'];
+	 	$startTimearr = field_get_items('node',$node,'field_vtsstarttime');
+		$startTime = $startTimearr[0]['value'];
+	 	$endTimearr = field_get_items('node',$node,'field_vtsendtime');
+		$endTime = $endTimearr[0]['value'];
+	 	$numVolSlotsarr = field_get_items('node',$node,'field_vtsslots');
+	 	$numVolSlots = $numVolSlotsarr[0]['value'];
+	 	$slotTimeIntervalarr = field_get_items('node',$node,'field_vtsinterval');
+	 	$slotTimeInterval = $slotTimeIntervalarr[0]['value'];
+		$output	= '<br><h2>I am in the addslots routine with an argument of ' . $arg1;
+		$output .= '<br>The event is ' .  $eventID;
+		$output .= '<br>The start time is:  ' . $startTime;
+		$output .= '<br>The end time is ' . $endTime;
+		$output .= '<br>The number of slots is ' . $numVolSlots;
+		$output .= '<br>The slot interval is: ' . $slotTimeInterval;
 
         for ($time = $startTime; $time < $endTime; $time = $time + 60*$slotTimeInterval) {
             $myentity = entity_create('vtsinterval',array());
