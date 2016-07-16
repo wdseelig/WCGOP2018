@@ -102,22 +102,13 @@ $vtsuser =  $_SESSION['vtsusrobj'];
 $vtsuser->handle = $form_state['input']['handle'];
 setvtsusrcreds($user,$vtsuser);  //Store user input in db
 $_SESSION['vtsusrobj'] = $vtsuser;
-drupal_goto($vtsuser->redirect);
+drupal_goto('vtsdailyview/' . $vtsuser->dayid);
 }
 
 function vtspopups_login_form_submit($form, &$form_state) {
 	global $user;
 	$vtsuser =  $_SESSION['vtsusrobj'];
 	$vtsuser->email = $form_state['input']['email'];
-	$vtsuser->baseurl = 'The value is: ' . $vtsuser->redirect;
-//	$form_state['cache'] = FALSE;
-//	$form_state['no_cache'] = TRUE;
-//	getvtsusrcreds($user,$vtsuser);
-//	$form_state['complete form']['arg']['#redirect']= $vtsuser->redirect;
-	$vtsuser->baseurl = $form_state;
-	$_SESSION['vtsusrobj'] = $vtsuser;
-	 
-//cache_clear_all(NULL, 'cache_form');  //Clear the cache before going to the page
-    drupal_goto($vtsuser->redirect, array('attributes' => array('return' => FALSE)));
-//	drupal_goto('q=form/vtspopups_nickname_form&destination=' . $form_state['complete form']['arg']['#redirect']);
+        getvtsusrcreds($user, $vtsuser);
+        drupal_goto('vtsdailyview/' . $vtsuser->dayid);
 }
