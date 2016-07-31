@@ -3,7 +3,7 @@
 #
 
 # Protect files and directories from prying eyes.
-<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)(|~|\.sw[op]|\.bak|\.orig|\.save)?$|^(\..*|Entries.*|Repository|Root|Tag|Template)$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig\.save)$">
+<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)(~|\.sw[op]|\.bak|\.orig|\.save)?$|^(\..*|Entries.*|Repository|Root|Tag|Template)$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig\.save)$">
   Order allow,deny
 </FilesMatch>
 
@@ -63,6 +63,10 @@ DirectoryIndex index.php index.html index.htm
   RewriteCond %{HTTPS} on
   RewriteRule ^ - [E=protossl:s]
 
+  # Make sure Authorization HTTP header is available to PHP
+  # even when running as CGI or FastCGI.
+  RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
   # Block access to "hidden" directories whose names begin with a period. This
   # includes directories used by version control systems such as Subversion or
   # Git to store control files. Files whose names begin with a period, as well
@@ -105,12 +109,18 @@ DirectoryIndex index.php index.html index.htm
   # uncomment the following line:
   # RewriteBase /
 
-  # Pass all requests not referring directly to files in the filesystem to
+# the two lines below where added by john_taylor - november 2015 to drop the need to use .html in a file name when serving it.
+
+      RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}\.html -s
+    RewriteRule .* %{REQUEST_URI}\.html [L,T=text/html]
+
+ # Pass all requests not referring directly to files in the filesystem to
   # index.php. Clean URLs are handled in drupal_environment_initialize().
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} !=/favicon.ico
   RewriteRule ^ index.php [L]
+
 
   # Rules to correctly serve gzip compressed CSS and JS files.
   # Requires both mod_rewrite and mod_headers to be enabled.
@@ -137,9 +147,3 @@ DirectoryIndex index.php index.html index.htm
     </FilesMatch>
   </IfModule>
 </IfModule>
-# Start A2 Switcher Block
-# Do not remove or modify this block! Added by PHP Switcher from cPanel to use an alternate PHP version. Contact Support for details.
-<IfModule mod_suphp.c>
-  AddHandler application/x-httpd-php-5.4.13 .php
-</IfModule>
-# End A2 Switcher Block
