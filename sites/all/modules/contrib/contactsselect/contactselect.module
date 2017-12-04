@@ -1,0 +1,53 @@
+<?php
+
+/**
+*		Implements functions to enable contact selection
+*/
+
+
+function contactselect_form_alter(&$form,
+	&$form_state,$form_id){
+		switch ($form_id) {
+			case 'views_exposed_form':
+			if ($form['#id'] == 'views-exposed-form-contactswithtags-page'){
+				$viewResults = views_get_view_result('basetagterms');
+				$form['field_contacttags_tid']['#options'] = array();
+				$form['field_contacttags_tid']['#options']['All'] = '- Any -';
+				foreach ($viewResults as $termobj)
+					$form['field_contacttags_tid']['#options'][$termobj->tid] = $termobj->taxonomy_term_data_name;
+				$form['field_contacttags_tid']['#ajax'] = array(
+					'callback' => 'contactselect_setindividualtags',
+					'wrapper' => 'tagwrapper',
+				);
+				$form['tid']['#prefix'] = '<div id = "tagwrapper">';
+				$form['tid']['#suffix'] = '</div>';
+				kpr($form);
+				array_unshift($form['#submit'],'contactselect_populatetaxonomy');
+			}
+		}
+	}
+function contactselect_populatetaxonomy(&$form,&$form_state){
+	kpr($form);
+	if ($form['field_contacttags_tid']['#value'] != 'All') {
+		$parentid = $form['field_contacttags_tid']['#value'][0];
+//		print_r ($form);
+//		die;
+		$childarray = taxonomy_get_children($parentid);
+//		print_r($childarray);
+//		die;
+		$form['tid']['#options'] = array();
+		$form['tid']['#options']['All'] = '- Any -';
+		foreach ($childarray as $termobj)
+			$form['tid']['#options'][$termobj->tid] = $termobj->name;
+		
+		
+		
+		kpr($form);
+		
+		}
+	}
+	function contactselect_setindividualtags(){
+		drupal_add_js('misc/ajax.js');
+		drupal_set_message('Made it into the tagwrapper routine');
+		ajax_command_alert ('Made it into the tagwrapper routine!');
+	}

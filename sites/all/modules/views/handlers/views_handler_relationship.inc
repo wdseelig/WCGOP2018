@@ -109,6 +109,7 @@ class views_handler_relationship extends views_handler {
     // Figure out what base table this relationship brings to the party.
     $table_data = views_fetch_data($this->definition['base']);
     $base_field = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];
+//    kpr ($table_data);
 
     $this->ensure_my_table();
 
@@ -141,6 +142,8 @@ class views_handler_relationship extends views_handler {
     $alias = $def['table'] . '_' . $this->table;
 
     $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
+//    kpr ($alias);
+//    kpr ($join);
 
     // Add access tags if the base table provide it.
     if (empty($this->query->options['disable_sql_rewrite']) && isset($table_data['table']['base']['access query tag'])) {

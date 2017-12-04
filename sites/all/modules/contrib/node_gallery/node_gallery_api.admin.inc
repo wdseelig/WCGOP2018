@@ -281,7 +281,7 @@ function node_gallery_api_relationship_type_settings_form($form, $form_state, $r
   foreach ($view_modes as $name => $label) {
     $form['view_modes'][$name] = array(
       '#type' => 'fieldset',
-      '#title' => $label,
+      '#title' => check_plain($label),
       '#collapsible' => TRUE,
       '#collapsed' => !($name == 'full' || $name == 'teaser'),
     );
@@ -464,6 +464,7 @@ function node_gallery_api_relationship_type_delete_form_submit($form, &$form_sta
   watchdog(
     'node_gallery',
     'Node Gallery relationship deleted.',
+    NULL,
     WATCHDOG_NOTICE
   );
 
@@ -502,7 +503,7 @@ function node_gallery_api_settings_form($form, &$form_state) {
     '#maxlength' => 5,
     '#size' => 5,
     '#title' => t('Enter the limit on the number of images displayed after upload.'),
-    '#default_value' => variable_get('node_gallery_plupload_api_manage_images_limit', 100),
+    '#default_value' => variable_get('node_gallery_api_plupload_manage_images_limit', 100),
     '#description' => t("Displaying too many images on the Manage Images tab at once will exhaust the server's memory.  This setting limits the number of images listed."),
   );
   if (!module_exists('plupload')) {
@@ -536,6 +537,15 @@ function node_gallery_api_settings_form($form, &$form_state) {
     '#title' => t('Activate the chronological order sorting feature in Sort Items tab?'),
     '#default_value' => variable_get('node_gallery_api_activate_chronological_sorting_button', FALSE),
     '#description' => t('When checked, you get an additional button in Sort Items tab, allowing to set shown images in chronological order, from JPEG embeded EXIF data.'),
+  );
+  $form['node_gallery_api_misc']['node_gallery_sort_images_max'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => 5,
+    '#size' => 5,
+    '#weight' => 5,
+    '#title' => t('Enter the limit on the number of images displayed on the Sort Items page.'),
+    '#default_value' => variable_get('node_gallery_sort_images_max', 750),
+    '#description' => t("Displaying too many images on the Sort Items page at once will exhaust the server's memory. Galleries with more images than this limit will not allow sorting with the standard interface."),
   );
 
   // TODO: Recreate wizard interface.

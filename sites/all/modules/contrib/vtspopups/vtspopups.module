@@ -2,6 +2,15 @@
 
 /**
  * Implements hook_init().
+ * NOTE:  The _init function below provides the capability of forcing the
+ *				display of either the nickname or the login form.  AS OF 7/11/17
+ *				THIS CAPABILITY IS NOT USED ANYWHERE IN THE voluntertimeslots
+ *				SYSTEM!!!
+ *
+ * NOTE:	[7/15/17] I now use the functionality here to bring up the
+ *				nickname form in the case where the user is not logged in, has
+ *				entered an email address, but has no nickname.  This is done in
+ *				the getvtsusrcreds function in the volunteertimeslots module.
  */
 function vtspopups_init() {
   if (isset($_GET['pfnickname'])) {
@@ -110,5 +119,6 @@ function vtspopups_login_form_submit($form, &$form_state) {
 	$vtsuser =  $_SESSION['vtsusrobj'];
 	$vtsuser->email = $form_state['input']['email'];
         getvtsusrcreds($user, $vtsuser);
+        $vtsuser = $_SESSION('vtsusrobj');
         drupal_goto('vtsdailyview/' . $vtsuser->dayid);
 }

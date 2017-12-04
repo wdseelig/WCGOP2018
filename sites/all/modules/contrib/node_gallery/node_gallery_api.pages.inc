@@ -34,7 +34,22 @@ function node_gallery_api_sort_items_form($form, $form_state, $gallery, $no_jque
 
   $max_image_count = variable_get('node_gallery_sort_images_max', 750);
   if ($image_count > $max_image_count) {
-    drupal_set_message(t('There are too many images in this gallery to display. You can increase the limit by !settings_url. The current limit is !max.', array('!settings' => 'admin/config/content/node-gallery/settings', '!max' => $max_image_count)), 'warning');
+    if (user_access(NODE_GALLERY_PERM_ADMIN_GALLERY)) {
+      drupal_set_message(t('There are too many images in this gallery to display.
+      You can increase the limit on !settings. The current limit is @max.',
+        array(
+          '!settings' => l(t('the Node Gallery settings page'), 'admin/config/content/node-gallery/settings'),
+          '@max' => $max_image_count)
+      ), 'warning');
+    }
+    else {
+      // Don't show the admin link when you can't go there.
+      drupal_set_message(t('There are too many images in this gallery to display. The current limit is @max.',
+        array(
+          '@max' => $max_image_count)
+      ), 'warning');
+    }
+
     return $form;
   }
 
@@ -115,7 +130,7 @@ function node_gallery_api_sort_items_form_set_chronological_sorting($form, &$for
   $gallery = node_load($ngid);
   $items = node_gallery_api_get_items($gallery, FALSE, FALSE);
   $no_exif_count = 0;
-  $exif = null;
+  $exif = NULL;
 
   // Get exif creation DateTime
   foreach ($items as $item) {
@@ -181,7 +196,7 @@ function node_gallery_api_sort_items_form_remove_weights_submit($form, &$form_st
     $message = t("All image weights have been reset. The global sorting is now active again.");
   }
   node_gallery_api_clear_gallery_caches($form_state['values']['ngid']);
-  drupal_set_message($message);
+  drupal_set_message(check_plain($message));
 }
 
 

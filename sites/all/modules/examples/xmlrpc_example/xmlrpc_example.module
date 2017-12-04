@@ -181,7 +181,7 @@ function xmlrpc_example_xmlrpc() {
       'int',
       // First operand is an integer.
       'int',
-      // Second operatnd is an integer.
+      // Second operand is an integer.
       'int',
     ),
     // Include a little description that is shown when XML-RPC server is
@@ -311,7 +311,7 @@ function xmlrpc_example_server_form() {
   );
   $form['info'] = array(
     '#type' => 'markup',
-    '#markup' => '<div>' . t('Use the <a href="!link">XML-RPC Client example form</a> to experiment', array('!link' => url('examples/xmlrpc/client'))),
+    '#markup' => '<div>' . t('Use the <a href="!link">XML-RPC Client example form</a> to experiment', array('!link' => url('examples/xmlrpc/client'))) . '</div>',
   );
   if (variable_get('xmlrpc_example_alter_enabled', FALSE)) {
     $form['overridden'] = array(

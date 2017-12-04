@@ -60,7 +60,11 @@
       <!--start advertise section-->
       <div id="header-images" <?php print ($usebanner == 0) ? 'class="unlimited"' : ""; ?>>
        
-       
+       <?php if($logo): ?>
+          <div id="logo-container">
+            <?php print $imagelogo; ?>
+          </div>
+        <?php endif; ?>
       
         
         <?php if (!$usebanner && (FALSE)): // Use drupal region ?>
@@ -75,11 +79,7 @@
         
        <div id="branding">
 
-        <?php if($logo): ?>
-          <div id="logo-container">
-            <?php print $imagelogo; ?>
-          </div>
-        <?php endif; ?>
+        
 
         <?php if($site_name || $siteslogan ): ?>
           <!--start title and slogan-->

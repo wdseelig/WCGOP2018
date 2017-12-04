@@ -162,16 +162,18 @@ function node_gallery_api_menu() {
     foreach ($relationship_types as $relationship) {
       foreach ($relationship->item_types as $item_type) {
         $type_info = node_type_load($item_type);
-        $items['node/%node_gallery_api_gallery/upload/' . $item_type] = array(
-          'title' => $type_info->name,
-          'page callback' => 'node_gallery_api_upload_items_form',
-          'page arguments' => array(1, $item_type),
-          'access callback' => 'node_gallery_api_upload_access',
-          'access arguments' => array(1, $item_type),
-          'file' => 'node_gallery_api.pages.inc',
-          'weight' => -2,
-          'type' => (empty($item_types)) ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK,
-        );
+        if (!empty($type_info)) {
+          $items['node/%node_gallery_api_gallery/upload/' . $item_type] = array(
+            'title' => $type_info->name,
+            'page callback' => 'node_gallery_api_upload_items_form',
+            'page arguments' => array(1, $item_type),
+            'access callback' => 'node_gallery_api_upload_access',
+            'access arguments' => array(1, $item_type),
+            'file' => 'node_gallery_api.pages.inc',
+            'weight' => -2,
+            'type' => (empty($item_types)) ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK,
+          );
+        }
         $item_types[] = $item_type;
       }
     }
@@ -508,7 +510,16 @@ function node_gallery_api_tokens($type, $tokens, array $data = array(), array $o
     if (!empty($relationships)) {
       $r = reset($relationships);
       $gallery_node = node_load($r->ngid);
-      $gallery_path = drupal_get_path_alias('node/' . $gallery_node->nid);
+      if (!empty($gallery_node)) {
+        $gallery_path = drupal_get_path_alias('node/' . $gallery_node->nid);
+        $gallery_title = $gallery_node->title;
+        $gallery_nid = $gallery_node->nid;
+      }
+      else {
+        $gallery_path = '';
+        $gallery_title = '';
+        $gallery_nid = '';
+      }
       foreach ($tokens as $name => $original) {
         switch ($name) {
           case 'node_gallery_gallery_path':
@@ -516,11 +527,11 @@ function node_gallery_api_tokens($type, $tokens, array $data = array(), array $o
             break;
 
           case 'node_gallery_gallery_title':
-            $replacements[$original] = decode_entities(check_plain($gallery_node->title));
+            $replacements[$original] = decode_entities(check_plain($gallery_title));
             break;
 
           case 'node_gallery_gallery_nid':
-            $replacements[$original] = $gallery_node->nid;
+            $replacements[$original] = $gallery_nid;
             break;
         }
       }
@@ -589,17 +600,19 @@ function node_gallery_api_entity_delete($entity, $type) {
       $relationship_type = node_gallery_api_get_relationship_type($bundle_type);
       if ($relationship_type->settings['og']['sync_items']) {
         $item_nids = node_gallery_api_get_item_nids($entity->etid, TRUE, FALSE);
-        $og_memberships = db_select('og_membership', 'ogm')
-          ->fields('ogm', array('id'))
-          ->condition('group_type', $entity->group_type)
-          ->condition('gid', $entity->gid)
-          ->condition('entity_type', 'node')
-          ->condition('etid', $item_nids, 'IN')
-          ->execute()
-          ->fetchCol();
-        og_membership_delete_multiple($og_memberships);
-        foreach ($item_nids as $nid) {
-          cache_clear_all('field:node:' . $nid, 'cache_field');
+        if (!empty($item_nids)) {
+          $og_memberships = db_select('og_membership', 'ogm')
+            ->fields('ogm', array('id'))
+            ->condition('group_type', $entity->group_type)
+            ->condition('gid', $entity->gid)
+            ->condition('entity_type', 'node')
+            ->condition('etid', $item_nids, 'IN')
+            ->execute()
+            ->fetchCol();
+          og_membership_delete_multiple($og_memberships);
+          foreach ($item_nids as $nid) {
+            cache_clear_all('field:node:' . $nid, 'cache_field');
+          }
         }
       }
     }

@@ -32,8 +32,9 @@ body.toolbar-drawer {
 #toolbar {
   background: #666;
   color: #ccc;
-  font: normal large "Lucida Grande", Verdana, sans-serif;
+  font: normal small "Lucida Grande", Verdana, sans-serif;
   left: 0;
+  font-size: 18px;
   margin: 0 -20px;
   padding: 0 20px;
   position: fixed;
@@ -52,7 +53,7 @@ body.toolbar-drawer {
 }
 #toolbar a {
   color: #fff;
-  font-size: 0.846em;
+  font-size: .846em;
   text-decoration: none;
 }
 #toolbar ul li,

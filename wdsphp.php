@@ -1,6 +1,6 @@
 <?php
 printf("\n\nhello world!");
-phpinfo(INFO_MODULES);
+phpinfo();
 
 $tstmp = 1441044069;
 print ("<br><br>The timestamp is:  " . $tstmp);

@@ -27,7 +27,7 @@ function marinelli_preprocess_page(&$vars) {
   else if($vars['page']['sidebar_first']){
     $vars['exception'] = 1;
   }
-
+  
   // theme vars
   $vars['usebanner']   = (theme_get_setting('banner_usage') != 0) ? TRUE : FALSE;
   // Set $page['advertise'] to hide advertise space (if not used).
@@ -305,20 +305,4 @@ function marinelli_get_banners($all = TRUE) {
  */
 function marinelli_set_banners($value) {
   variable_set('theme_marinelli_banner_settings', $value);
-}
-/**
- * Theme function for the commerce order.
- */
-function marinelli_commerce_email_order_items($variables) {
-	variable_set("aaathemealter","I have altered the theme function");
-
-  $order_wrapper = $variables['commerce_order_wrapper'];
-
-  // Get view.
-  $view = views_get_view('gop_clone_of_shopping_cart_summary');
-
-  // Preview the given display, with the given arguments.
-  $view_preview = $view->preview('default', array($order_wrapper->getIdentifier()));
-
-  return $view_preview;
 }

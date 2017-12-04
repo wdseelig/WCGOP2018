@@ -387,7 +387,7 @@ function node_gallery_api_batch_node_save($nodes, &$context) {
 function node_gallery_api_get_item_field_name($gallery_type = NULL, $item_type = NULL, $relationship_type_id = NULL) {
   if (empty($relationship_type_id)) {
     $relationship_type = node_gallery_api_get_relationship_type($gallery_type, $item_type);
-    $relationship_id = $relationship_type->id;
+    $relationship_type_id = $relationship_type->id;
   }
   if (!empty($relationship_type_id)) {
     return NODE_GALLERY_REF_FIELD . '_' . $relationship_type_id;
@@ -1100,3 +1100,4 @@ class NodeGalleryRelationshipTypeMetadataController extends EntityDefaultMetadat
   }
 
 }
+

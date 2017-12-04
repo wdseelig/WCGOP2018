@@ -73,7 +73,10 @@ function commerce_stripe_commerce_payment_method_info() {
       }
 
       if (!empty($action->settings['payment_method']['method_id']) && $action->settings['payment_method']['method_id'] == 'commerce_stripe') {
-        $stripe_integration = $action->settings['payment_method']['settings']['integration_type'];
+        // Default to Stripe.js if no integration_type has been chosen.
+        if (!empty($action->settings['payment_method']['settings']['integration_type'])) {
+          $stripe_integration = $action->settings['payment_method']['settings']['integration_type'];
+        }
         $cardonfile = !empty($action->settings['payment_method']['settings']['cardonfile']) ? TRUE : FALSE;
         break;
       }
@@ -181,6 +184,12 @@ function commerce_stripe_settings_form($settings) {
     '#title' => t('Payment method display title'),
     '#description' => t('Payment method display title'),
     '#default_value' => !empty($settings['display_title']) ? $settings['display_title'] : t('Stripe'),
+  );
+  $form['receipt_email'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Email receipts'),
+    '#description' => t('When selected, customers will receive email receipts from Stripe.'),
+    '#default_value' => isset($settings['receipt_email']) ? $settings['receipt_email'] : 0,
   );
   $form['integration_type'] = array(
     '#type' => 'select',
@@ -388,13 +397,13 @@ function commerce_stripe_submit_form($payment_method, $pane_values, $checkout_pa
     // Add Checkout settings.
     $checkout_settings = $payment_method['settings']['checkout_settings'];
 
-    // Clean up js settings before adding them to the page.
-    $checkout_settings = array_filter(array_map(function($value) {
+    // Convert JS settings to Booleans before adding them to the page.
+    $checkout_settings = array_map(function($value) {
       if ($value === 0 OR $value === 1) {
         $value = (bool) $value;
       }
       return $value;
-    }, $checkout_settings));
+    }, $checkout_settings);
 
     // Get the image file if one is set.
     if (isset($checkout_settings['image']['fid'])) {
@@ -499,6 +508,11 @@ function commerce_stripe_submit_form_submit($payment_method, $pane_form, $pane_v
     'card' => $pane_values['stripe_token'],
     'description' => $description,
   );
+
+  // Specify that we want to send a receipt email if we are configured to do so.
+  if (!empty($payment_method['settings']['receipt_email'])) {
+    $c['receipt_email'] = $order->mail;
+  }
 
   // The metadata could be added via the alter below but for compatibility
   // reasons it may stay.
@@ -691,13 +705,28 @@ function _commerce_stripe_save_cardonfile($card, $uid, $payment_method, $set_def
  */
 function commerce_stripe_commerce_payment_method_info_alter(&$payment_methods) {
   if (isset($payment_methods['commerce_stripe'])) {
-    $settings = _commerce_stripe_load_settings();
-
-    if (empty($settings['secret_key']) || empty($settings['public_key'])) {
-      if (user_access('administer payment methods')) {
-        drupal_set_message('Stripe secret and public key are required in order to use Stripe payment method. See README.txt for instructions.', 'warning');
-      }
+    // Just return if they don't have permission to see these errors.
+    if (!user_access('administer payment methods')) {
+      return;
     }
+    $found_errors = FALSE;
+    $settings = _commerce_stripe_load_settings();
+    // If secret_key or public_key is not set.
+    if (empty($settings['secret_key']) || empty($settings['public_key'])) {
+        $found_errors = TRUE;
+        drupal_set_message(t('Stripe secret and public key are required in order to use Stripe payment method. See README.txt for instructions.'), 'warning');
+    }
+    // If integration_type is not set.
+    if (empty($settings['integration_type'])) {
+        $found_errors = TRUE;
+        drupal_set_message(t('The Stripe payment method "Integration type" is not set. Stripe.js will be used by default.'), 'warning');
+    }
+    // If they need to configure anything, be nice and give them the link.
+    if ($found_errors) {
+      $link = l(t('configured here'), 'admin/commerce/config/payment-methods');
+      drupal_set_message(t('Settings required for the Stripe payment method can be !link.', array('!link' => $link)), 'warning');
+    }
+
   }
 }
 
@@ -842,18 +871,16 @@ function commerce_stripe_cardonfile_create_form($form, &$form_state, $op, $card_
     '#default_value' => FALSE,
   );
 
-  $available_countries = NULL;
-  if (isset($form_state['input']['country'])) {
-    $available_countries = array($form_state['input']['country'] => NULL);
-  }
+  // Create a billing profile object and add the address form.
+  $profile = commerce_customer_profile_new('billing', $form_state['card']->uid);
+  $form_state['commerce_customer_profile'] = $profile;
+  $form['commerce_customer_profile'] = array();
+  field_attach_form('commerce_customer_profile', $profile, $form['commerce_customer_profile'], $form_state);
 
-  $field = field_info_field('commerce_customer_address');
-  $instance = field_info_instance('commerce_customer_profile', 'commerce_customer_address', 'billing');
+  $form['commerce_customer_profile']['#weight'] = -1;
 
-  $form['address'] = addressfield_generate(
-    addressfield_default_values($field, $instance, array($available_countries)),
-    array('address' => 'address'),
-    array('mode' => 'form'));
+  // Add a validation callback so that we can call field_attach functions.
+  $form['#validate'][] = 'commerce_stripe_cardonfile_create_validate';
 
   commerce_stripe_set_addressfield_class_names($form['address']);
 
@@ -863,6 +890,14 @@ function commerce_stripe_cardonfile_create_form($form, &$form_state, $op, $card_
   );
 
   return $form;
+}
+
+/**
+ * Validation callback for card on file creation.
+ */
+function commerce_stripe_cardonfile_create_validate($form, &$form_state) {
+  $profile = $form_state['commerce_customer_profile'];
+  field_attach_form_validate('commerce_customer_profile', $profile, $form['commerce_customer_profile'], $form_state);
 }
 
 function commerce_stripe_cardonfile_create_form_submit($form, &$form_state) {

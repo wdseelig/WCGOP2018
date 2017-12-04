@@ -135,39 +135,58 @@ function volunteertimeslots_views_api() {
          */
 	if ( !isset($vtsusrobj) ) {
  		$vtsusrobj = new stdClass();
-                $query = 'SELECT * FROM {gopuser} WHERE email LIKE ' . 'CONCAT(\'' . $user->mail . '\',\'%\') ';
-                $record = new stdClass();
-                $vtsusrobj->dayid = $day;
-                $result = db_query($query);
-                if ($user->mail != '') {
-                    if ($record = $result->fetchObject()) {
-			$vtsusrobj->email = $user->mail;
-			$vtsusrobj->handle = $record->handle;
-                    }
+    $query = 'SELECT * FROM {gopuser} WHERE email LIKE ' . 'CONCAT(\'' .
+    		$user->mail . '\',\'%\') ';
+    $record = new stdClass();
+    $vtsusrobj->dayid = $day;
+    $result = db_query($query);
+    if ($user->mail != '') {
+       if ($record = $result->fetchObject()) {
+					$vtsusrobj->email = $user->mail;
+					$vtsusrobj->handle = $record->handle;
+       }
 		}
+		
  	  $_SESSION['vtsusrobj']= $vtsusrobj;
 
-            }
-            $vtstoplinks = array();
+   }
+  $vtstoplinks = array();
             
-         /*
-          *     Create the Connect (or Disconnect) link
-          */
+/*
+*     Create the Connect (or Disconnect) link
+*/
             $vtshdr = '<div class=vtstoplink>';
+/*
+*						If the user has a handle, just set the link to Disconnect
+*/
             if ($vtsusrobj->handle != '') {
                 $vtshdr .= '<a href=' . $base_url . '/zap>Disconnect</a></div';
+/*
+*						If the user doesn't have a handle, but does have an email address
+*						then ask them to supply a nickname
+*/
             } elseif ($vtsusrobj->email != '') {
-                $gourl = popup_forms_link('vtspopups_nickname_form',t('Connect'));
+                $gourl = popup_forms_link('vtspopups_nickname_form',
+                	t('Connect'));
                 $vtshdr .= $gourl . '</div>';
-            } else {
+/*
+*						If the user has neither an email address nor a handle, then ask them
+*						to log in to the system
+*/
+            	} else {
                 $gourl = popup_forms_link('vtspopups_login_form',t('Connect'));
                 $vtshdr .= $gourl . '</div>';
             }
+/*
+*						Create the content for the nickname area in the view
+*/
             $vtsnickname = '<div class = vtstopnickname>';
             if ( $vtsusrobj->handle != ''){
                 $vtsnickname .= 'Nickname:   ' . $vtsusrobj->handle . '</div>';
             } else {
-                $vtsnickname .= 'You need to tell us who you are before you can volunteer. <p> Please click on the Connect link to sign in to the system.</p>';
+                $vtsnickname .= 'You need to tell us who you are before you can
+                  volunteer. <p> Please click on the Connect link just above the
+                  event title to sign in to the system.</p>';
             }
             $vtstoplinks['connect'] = $vtshdr;
             $vtstoplinks['nickname'] = $vtsnickname;
@@ -204,6 +223,7 @@ function volunteertimeslots_ajax_callback($type='ajax')  {
                 $myupdateentity->save();
                 
                 $commands = array();
+//    $commands[] = ajax_command_alert('This is just a test');
 		$commands[] = ajax_command_html('.vtsclass' . $itemID . '_' . $itemslot, $rplHandle);
 		$page = array('#type' => 'ajax', '#commands' => $commands);
 		ajax_deliver($page);
@@ -269,6 +289,9 @@ return render($output);
 }
 function getvtsusrcreds($user, &$vtsusrobj) {
 	if ($user->uid != 0 ) {
+/*
+*		The is the case where the user is logged in.  
+*/
 	$vtsusrobj->email = $user->mail;	
 	$result = db_query("
 		SELECT * FROM {gopuser}
@@ -278,31 +301,71 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 			$vtsusrobj->email = $user->mail;
 			$vtsusrobj->handle = $record->handle;
 		}
-	} else {
+	}
+	else {
 	
-	/*		This is the anonymous user case
-	
-	
+	/*
+	*		This is the anonymous user case.  The login popup form's submit routine
+	*		will have stored the user's entry in the $vtsuserobj, so we start by
+	*		checking to see if the user entered anything.
 	*/
 	if ($vtsusrobj->email != "") {       //Has user entered an email?
-
 			$matchvalue = $vtsusrobj->email;
-		 $result = db_query("
+			$result = db_query("
 			SELECT * FROM {gopuser}
 			WHERE email LIKE CONCAT(:usremail,'%')",
 			array('usremail' => $matchvalue));
 			if ($record = $result->fetchObject()) {
 					$vtsusrobj->email = $record->email;
 					$vtsusrobj->handle = $record->handle;
-			} else {
-					$vtsusrobj->sessionstart = '3333333';			//This is, for now, the match failed indicator
-					drupal_goto('BV');
-					die;
-
-			}		
+					if ($vtsusrobj->handle){
+						drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
+					}
+			}
+/*
+*			NOTE [7/11/17]:  This is the case in which the user is not logged in,
+*			whose email address was in the gopuser table, but for whom there is no
+*			handle yet.  For now, I'm just sending them to the Booth Volunteer [BV]
+*			page, but I probably should figure out a way of letting them supply their
+*			own handle. [All I need to do is figure out how to put up the nickname
+*			popup form, without forcing the user to click on a link]
+*
+*			NOTE: [7/15/17]  I figured out how to bring up the nickname popup form
+*			so now I'm doing that.
+*/
+			$gourl = url('vtsdailyview/' . $vtsusrobj->dayid . '?pfnickname=1');
+			$options=array('query' => array('pfnickname' => '1'));
+			drupal_goto($gourl, $options);
+/*
+*			NOTE:  The code below is what I first tried in order to bring up the
+*			nickname popup form on the page.  This DOES bring up the form, but
+*			NOT as a popup, so I ended up using the code above.  I believe that this
+*			fails to bring up the form as a popup because the Javascript to load the
+*			form as a popup never gets put on the page.  [In the code above, this
+*			script gets loaded on the page by the vtspopups_init function, but that
+*			does not happen here.]
+*
+*			$gourl = 'form/vtspopups_nickname_form';
+*			$options=array('query' => array('destination' => $vtsusrobj->dayid));
+*			drupal_goto($gourl);
+*/
+	}
+/*
+*			NOTE [7/11/17]:  This is the case in which the user is not logged in, but
+*			did not enter an email address in the popup login form.  We just send them
+*			back to the dailyview page [where, presumably, they will figure out that
+*			they need to provide us with an email address].
+*/
+			drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
 }
-return;	
-}
+/*
+*			NOTE [7/11/17]:  This is the case in which the user is logged in but whose
+*			email address on our site does not match anything in the gopuser table.
+*			I'm just going to send them to BV for now, but there may be something
+*			a good deal more complex that I could do [like enter their site email in
+*			the gopuser table and then give them an opportunity to pick a nickname]?
+*/
+		drupal_goto('BV');
 }
 function setvtsusrcreds($user,&$vtsuser)  {
 global $user;
@@ -321,6 +384,12 @@ if ($result->fetchObject()) {
 	$vtsuser->invalidnickname = TRUE;
 	return;	
 }
+/*
+*
+*		This code is operating under the assumption that the email that was entered
+*		must be in the gopuser table.  If that is not the case, then no update to
+*		gopuser will take place.
+*/
 $numupdated = db_update('gopuser')
 		->fields(array(
 			'handle' => $vtsuser->handle,
@@ -356,7 +425,7 @@ function vts_getReplacementHandle($usrHandle, $handle, &$vtsusrobj) {
 }
 function volunteertimeslots_zapsession()  {
 global $base_url;
-		$_SESSION = array();
+		$_SESSION['vtsusrobj']= NULL;
 //		session_destroy();
 		cache_clear_all(NULL,'cache_page');
 		drupal_goto('<front>');
