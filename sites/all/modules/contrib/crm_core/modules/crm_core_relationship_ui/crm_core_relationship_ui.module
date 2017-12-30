@@ -351,6 +351,8 @@ function crm_core_relationship_ui_views_pre_render(&$view) {
     $contact_id = $view->args[0];
     $contact = crm_core_contact_load($contact_id);
     _crm_core_relationships_ui_breadcrmub($contact);
+//    printf("The contact label is:  " . $contact->label());
+//    die;
     $view->build_info['title'] = t('Relationships for @contact_name', array('@contact_name' => $contact->label()));
   }
 }
@@ -362,6 +364,7 @@ function crm_core_relationship_ui_views_pre_render(&$view) {
  *  Entity object of crm_core_contact type.
  */
 function _crm_core_relationships_ui_breadcrmub($contact) {
+	/*
   $contact_uri = $contact->uri();
   $breadcrumb = array(
     l(t('Home'), '<front>'),
@@ -371,6 +374,7 @@ function _crm_core_relationships_ui_breadcrmub($contact) {
     l(t('Relationships'), $contact_uri['path'] . '/relationships'),
   );
   drupal_set_breadcrumb($breadcrumb);
+  */
 }
 
 /**
