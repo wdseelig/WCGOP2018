@@ -20,5 +20,7 @@ drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 error_reporting(E_ALL);
 $myvalue = variable_get('chosen_jquery_selector');
 $y=1;
-//ini_set('display_errors',1);
+$z = $y + 2;
+$zz = $z + 3;
+ini_set('display_errors',1);
 menu_execute_active_handler();
