@@ -305,17 +305,7 @@ function mymodule_set_target($source, $entity, $target, $value, $mapping) {
 *			
 */
 }
-function contactselect_feeds_presave(FeedsSource $source, $entity, $item){
+function contactselect_feeds_before_update(FeedsSource $source, $item, $entity_id){
 	watchdog('contactselect_feeds_presave','I am in the presave routine');
-	drupal_set_message('I am in the contactselect routine','status');
-//	$entity->field_tagswithhhsv2['und']['0']['tid'] = 33;
-	if (substr($source->config->FeedFileFetcher['source'], -11) === "_append.csv")
-		$action = "We should append these records";
-	else
-		$action = "We should NOT append these records";
-	$y = 2;
-//	dpm($source);		
-//	print_r($entity);
-//	print_r($item);
-//	die;
+	return;
 }
