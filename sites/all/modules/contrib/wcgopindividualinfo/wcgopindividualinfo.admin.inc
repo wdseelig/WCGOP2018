@@ -166,7 +166,10 @@ function addtocontactssubmit($form, &$form_state,$form_id){
 		$wrapper->contact_name->family->set($form_state['build_info']
 			['args']['0']->LastName);
 		$wrapper->save();
+		drupal_set_message("The contact was added!");
+		$form_state['redirect'] = 'facetedcontactsv2';
 		return;
+		
 		break;
 	}
 	$form_state['redirect'] = 'http://www.ncms.org';
