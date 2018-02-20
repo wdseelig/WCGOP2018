@@ -50,12 +50,9 @@ function contactselect_form_alter(&$form,&$form_state,$form_id){
 					'wrapper' => 'tagwrapper',
 				);
 				$form['#prefix'] = '<div id = "tagwrapper" class = "chosen-enable">';
-				$form['#suffix'] = '</div>';
-				break;
-//				
-//				array_unshift($form['#submit'],'contactselect_populatetaxonomy');
-				
+				$form['#suffix'] = '</div>';				
 			}
+			break;
 			case 'crm_core_contact_ui_form' :
 			watchdog('contactselect', 'Made it into the crm_core_contact_ui_form');
 			if ($form['#id'] == 'crm-core-contact-ui-form') {
@@ -65,14 +62,28 @@ function contactselect_form_alter(&$form,&$form_state,$form_id){
 				$form['contact_name'] = array();
 				$form['field_address'] = array();
 				$emailentry = ($contact->email) ? 'Email address: ' . $contact->email: '';
-				$form['body'] = array(
-				'#markup' => '<p><h3><br>' . $contact->PrimaryAddress1 . '<br>' .
+				$headers = array(t('Address'),t('Phone Number(s)'));
+				$addr = '<h3>' . $contact->PrimaryAddress1 . '<br>' .
 					$contact->PrimaryCity . ', ' .
 					$contact->PrimaryState . ' ' .
 					$contact->PrimaryZip . '<br>' .
-					$emailentry . '<br></h3></p>',
+					$emailentry . '</h3>';
+				$phones = ($contact->HomePhone) ? '<h3>Home Phone: ' . formatPhoneNumber($contact->HomePhone) : "";
+				$phones .= ($contact->CellularPhone) ? '<h3>Cell Phone: ' . formatPhoneNumber($contact->CellularPhone) : "" ;
+				$phones .= ($contact->WorkPhone) ? '<h3>Work Phone: ' . formatPhoneNumber($contact->WorkPhone) : "" ;
+				$phones .= ($contact->PrimaryPhone) ? '<h3>Primary (QVF) Phone:' . formatPhoneNumber($contact->PrimaryPhone) : "";
+				$phones .= '</h3>';
+				$rows[] = array($addr,$phones);
+				$formbody = theme('table',array('header' => $headers,'rows' => $rows));
+				
+				$form['body'] = array(
+				/*
+				'#markup' => 
+				*/
+					'#markup' => $formbody,
 				'#weight' => '0'
 				);
+				
 				$form['notes']= array(
     		'#type' => 'textarea',
    			 '#title' => t('Add or edit the notes for this contact'),
@@ -92,9 +103,47 @@ function contactselect_form_alter(&$form,&$form_state,$form_id){
 				
 				drupal_set_title(t($contact->LastName . ", " . $contact->FirstName));
 //				kpr($form);
-				break;
-			}			 
+			}	
+			break;
+			case 'crm_core_contact_ui_delete_form':
+			$form['actions']['submit']['#submit']=array('wcgop_crm_core_contact_ui_delete_form');
+			$form_state['rebuild'] = TRUE;
+//			drupal_rebuild_form($form_id,$form_state);
+			break;			 
 		}
+	}
+	function formatPhoneNumber($phoneNumber) {
+    $phoneNumber = preg_replace('/[^0-9]/','',$phoneNumber);
+
+    if(strlen($phoneNumber) > 10) {
+        $countryCode = substr($phoneNumber, 0, strlen($phoneNumber)-10);
+        $areaCode = substr($phoneNumber, -10, 3);
+        $nextThree = substr($phoneNumber, -7, 3);
+        $lastFour = substr($phoneNumber, -4, 4);
+
+        $phoneNumber = '+'.$countryCode.' ('.$areaCode.') '.$nextThree.'-'.$lastFour;
+    }
+    else if(strlen($phoneNumber) == 10) {
+        $areaCode = substr($phoneNumber, 0, 3);
+        $nextThree = substr($phoneNumber, 3, 3);
+        $lastFour = substr($phoneNumber, 6, 4);
+
+        $phoneNumber = '('.$areaCode.') '.$nextThree.'-'.$lastFour;
+    }
+    else if(strlen($phoneNumber) == 7) {
+        $nextThree = substr($phoneNumber, 0, 3);
+        $lastFour = substr($phoneNumber, 3, 4);
+
+        $phoneNumber = $nextThree.'-'.$lastFour;
+    }
+
+    return $phoneNumber;
+}
+	function wcgop_crm_core_contact_ui_delete_form($form, &$form_state) {
+		if (crm_core_contact_delete($form_state['values']['contact_id'])) {
+    drupal_set_message(t('Contact deleted.'));
+  }
+		$form_state['redirect'] = 'facetedcontactsv2';
 	}
 	function wcgopsavecontact($form, &$form_state) {
 //		kpr($form);
