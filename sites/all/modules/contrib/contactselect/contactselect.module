@@ -67,7 +67,8 @@ function contactselect_form_alter(&$form,&$form_state,$form_id){
 					$contact->PrimaryCity . ', ' .
 					$contact->PrimaryState . ' ' .
 					$contact->PrimaryZip . '<br>' .
-					$emailentry . '</h3>';
+					$emailentry . '<br>'  .
+					'Voting Frequency:  ' . $contact->GeneralFrequency . '</h3>';
 				$phones = ($contact->HomePhone) ? '<h3>Home Phone: ' . formatPhoneNumber($contact->HomePhone) : "";
 				$phones .= ($contact->CellularPhone) ? '<h3>Cell Phone: ' . formatPhoneNumber($contact->CellularPhone) : "" ;
 				$phones .= ($contact->WorkPhone) ? '<h3>Work Phone: ' . formatPhoneNumber($contact->WorkPhone) : "" ;
