@@ -144,20 +144,6 @@ function toolbar_page_build(&$page) {
  * rendering to ensure that it is built only if it will be displayed.
  */
 function toolbar_pre_render($toolbar) {
-	
-/**
-*          WDS patch to suppress the toolbar for users who have access to the
-*          admin_menu
-*/
-
-     if (user_access('access administration menu')) {
-     return;
-     }
-
-/**
-*          End of WDS patch
-*/
-	
   $toolbar = array_merge($toolbar, toolbar_view());
   return $toolbar;
 }
@@ -248,7 +234,7 @@ function toolbar_view() {
         'attributes' => array('title' => t('User account')),
       ),
       'logout' => array(
-        'title' => t('Loggg out'),
+        'title' => t('Log out'),
         'href' => 'user/logout',
       ),
     );

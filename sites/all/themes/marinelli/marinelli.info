@@ -17,6 +17,7 @@ stylesheets[all][] = css/blocks.css
 stylesheets[all][] = css/node.css
 stylesheets[all][] = css/comments.css
 stylesheets[all][] = css/pages/maintenance-page.css
+stylesheets[all][] = css/wcgop.css
 
 stylesheets[print][] = css/print/print.css
 
