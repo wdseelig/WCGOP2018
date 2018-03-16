@@ -148,7 +148,7 @@ function wcgopindividualinfo_form_addtocontacts($form, &$form_state, $entity){
 			  $form_state['redirect'] = 'Something';
 	return $form;
 }
-function addtocontactssubmit($form, &$form_state,$form_id){
+function addtocontactssubmit($form, &$form_state){
 //	kpr($form);
 //	kpr($form_state);
 //	die;
