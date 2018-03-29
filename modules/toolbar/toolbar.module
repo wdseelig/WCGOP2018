@@ -117,19 +117,19 @@ function _toolbar_is_collapsed() {
  * Add admin toolbar to the page_top region automatically.
  */
 function toolbar_page_build(&$page) {
-	
 	/**
-*          WDS patch to suppress the toolbar for users who have access to the
-*          admin_menu
+*      	WDS patch to suppress the toolbar for users who have access to the
+*      	admin_menu
 */
 
-     if (user_access('access administration menu')) {
-     return;
-     }
+ 	if (user_access('access administration menu')) {
+ 	return;
+ 	}
 
 /**
-*          End of WDS patch
+*      	End of WDS patch
 */
+
   $page['page_top']['toolbar'] = array(
     '#pre_render' => array('toolbar_pre_render'),
     '#access' => user_access('access toolbar'),
