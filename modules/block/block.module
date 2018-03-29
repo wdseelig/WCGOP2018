@@ -432,7 +432,7 @@ function _block_rehash($theme = NULL) {
   drupal_alter('block_info', $current_blocks, $theme, $code_blocks);
   foreach ($current_blocks as $module => $module_blocks) {
     foreach ($module_blocks as $delta => $block) {
-        // value if the module did not.
+      // Make sure certain attributes are set.
       $block += array(
         'pages' => '',
         'weight' => 0,
