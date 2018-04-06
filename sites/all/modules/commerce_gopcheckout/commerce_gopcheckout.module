@@ -161,7 +161,7 @@ function commerce_gopcheckout_gopordercheck($form,&$form_state) {
 		$order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 		$order_wrapper->field_orderattached->set($order->order_id);
 		$order_total = $order_wrapper->commerce_order_total->value();
-		$amount = commerce_currency_amount_to_decimal($order_total['amount']);
+		$amount = commerce_currency_amount_to_decimal($order_total['amount'],'USD');
 		if ($form['customer_profile_billing']['field_paidbycheck']['und']
 		['#value'] || $order_wrapper->field_payatdoor->raw() || ($amount == 0)) { 
 			commerce_order_status_update($order,'pending');
@@ -238,7 +238,7 @@ function commerce_gopcheckout_form_alter(&$form,&$form_state,$form_id) {
 					$order = commerce_cart_order_load($user->uid);
 					$wrapper = entity_metadata_wrapper('commerce_order',$order);
 					$order_total = $wrapper->commerce_order_total->value();
-					$amount = commerce_currency_amount_to_decimal($order_total['amount']);
+					$amount = commerce_currency_amount_to_decimal($order_total['amount'],'USD');
 						if ($amount < 25) {
 							$form['actions']['payatdoor']['#type'] = 'submit';
 							$form['actions']['payatdoor']['#value'] = 'Pay at Door';
@@ -296,7 +296,7 @@ function commerce_gopcheckout_finishmemberorder($form, &$form_state) {
 	$order = commerce_cart_order_load($user->uid);
 	$order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 	$order_total = $order_wrapper->commerce_order_total->value();
-	$amount = commerce_currency_amount_to_decimal($order_total['amount']);
+	$amount = commerce_currency_amount_to_decimal($order_total['amount'],'USD');
 	if ( ($amount == 0 )|| $order_wrapper->field_payatdoor->raw() ){
 		commerce_order_status_update($order,'pending');
 		commerce_order_save($order);
