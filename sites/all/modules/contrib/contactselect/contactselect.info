@@ -2,3 +2,6 @@ name = Contacts Selection
 description = "Allow users to down select contacts based on tags"
 package = Contacts Selection
 core = 7.x
+dependencies[] = Views
+files[] = contactselect.module
+files[] = contactselect.views.inc

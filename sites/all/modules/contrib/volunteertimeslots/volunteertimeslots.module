@@ -210,21 +210,21 @@ function volunteertimeslots_ajax_callback($type='ajax')  {
                     $vtsusrobj = $_SESSION['vtsusrobj'];
 
 		$usrHandle = $vtsusrobj->handle;
-		$itemID = $_GET[itemID];
-                $itemslot = $_GET[itemslot];
+		$myitemID = $_GET['itemID'];
+                $myitemslot = $_GET['itemslot'];
                 
-                $myentity = entity_load('vtsinterval',array($itemID));
-                $myupdateentity = $myentity[$itemID];
-                $itemHandle = $myupdateentity->{'handle' . $itemslot};
+                $myentity = entity_load('vtsinterval',array($myitemID));
+                $myupdateentity = $myentity[$myitemID];
+                $itemHandle = $myupdateentity->{'handle' . $myitemslot};
                 
 		$rplHandle = vts_getReplacementHandle($usrHandle,$itemHandle, $vtsusrobj);  //The value of the new handle
               
-                $myupdateentity->{'handle' . $itemslot} = $rplHandle;
+                $myupdateentity->{'handle' . $myitemslot} = $rplHandle;
                 $myupdateentity->save();
                 
                 $commands = array();
 //    $commands[] = ajax_command_alert('This is just a test');
-		$commands[] = ajax_command_html('.vtsclass' . $itemID . '_' . $itemslot, $rplHandle);
+		$commands[] = ajax_command_html('.vtsclass' . $myitemID . '_' . $myitemslot, $rplHandle);
 		$page = array('#type' => 'ajax', '#commands' => $commands);
 		ajax_deliver($page);
 }
@@ -322,6 +322,16 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 						drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
 					}
 			}
+			else{
+/*		NOTE [8/19/2018]:  This is an unhandled case.  The user is not logged in,
+*			but has entered an email address, and that email address is NOT in the
+*			gopuser table.  I think what I ought to do in this case is update the
+*			gopuser table to include this new email address, and then just fall
+*			through this routine.  If I am right, the next thing that will happen
+*			is the code below this note, which will set the url to the daily
+*			sign in sheet, and then pop up the nickname form.
+*/
+			}
 /*
 *			NOTE [7/11/17]:  This is the case in which the user is not logged in,
 *			whose email address was in the gopuser table, but for whom there is no
@@ -388,7 +398,10 @@ if ($result->fetchObject()) {
 *
 *		This code is operating under the assumption that the email that was entered
 *		must be in the gopuser table.  If that is not the case, then no update to
-*		gopuser will take place.
+*		gopuser will take place. [8/19/2018] Note, however, that we will now return
+*		to the nickname popup submit routine, and that routine will proceed as
+*		an update HAD been made.  The result is that we will have a user handle
+*		for which there is no entry in the gopuser table.
 */
 $numupdated = db_update('gopuser')
 		->fields(array(

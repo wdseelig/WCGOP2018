@@ -611,8 +611,9 @@ function drupal_parse_url($url) {
   }
   // The 'q' parameter contains the path of the current page if clean URLs are
   // disabled. It overrides the 'path' of the URL when present, even if clean
-  // URLs are enabled, due to how Apache rewriting rules work.
-  if (isset($options['query']['q'])) {
+  // URLs are enabled, due to how Apache rewriting rules work. The path
+  // parameter must be a string.
+  if (isset($options['query']['q']) && is_string($options['query']['q'])) {
     $options['path'] = $options['query']['q'];
     unset($options['query']['q']);
   }
@@ -2182,14 +2183,11 @@ function url($path = NULL, array $options = array()) {
     'prefix' => ''
   );
 
+  // Determine whether this is an external link, but ensure that the current
+  // path is always treated as internal by default (to prevent external link
+  // injection vulnerabilities).
   if (!isset($options['external'])) {
-    // Return an external link if $path contains an allowed absolute URL. Only
-    // call the slow drupal_strip_dangerous_protocols() if $path contains a ':'
-    // before any / ? or #. Note: we could use url_is_external($path) here, but
-    // that would require another function call, and performance inside url() is
-    // critical.
-    $colonpos = strpos($path, ':');
-    $options['external'] = ($colonpos !== FALSE && !preg_match('![/?#]!', substr($path, 0, $colonpos)) && drupal_strip_dangerous_protocols($path) == $path);
+    $options['external'] = $path === $_GET['q'] ? FALSE : url_is_external($path);
   }
 
   // Preserve the original path before altering or aliasing.
@@ -2227,6 +2225,11 @@ function url($path = NULL, array $options = array()) {
     return $path . $options['fragment'];
   }
 
+  // Strip leading slashes from internal paths to prevent them becoming external
+  // URLs without protocol. /example.com should not be turned into
+  // //example.com.
+  $path = ltrim($path, '/');
+
   global $base_url, $base_secure_url, $base_insecure_url;
 
   // The base_url might be rewritten from the language rewrite in domain mode.
@@ -2254,7 +2257,10 @@ function url($path = NULL, array $options = array()) {
     $language = isset($options['language']) && isset($options['language']->language) ? $options['language']->language : '';
     $alias = drupal_get_path_alias($original_path, $language);
     if ($alias != $original_path) {
-      $path = $alias;
+      // Strip leading slashes from internal path aliases to prevent them
+      // becoming external URLs without protocol. /example.com should not be
+      // turned into //example.com.
+      $path = ltrim($alias, '/');
     }
   }
 
@@ -2304,10 +2310,21 @@ function url($path = NULL, array $options = array()) {
  */
 function url_is_external($path) {
   $colonpos = strpos($path, ':');
-  // Avoid calling drupal_strip_dangerous_protocols() if there is any
-  // slash (/), hash (#) or question_mark (?) before the colon (:)
-  // occurrence - if any - as this would clearly mean it is not a URL.
-  return $colonpos !== FALSE && !preg_match('![/?#]!', substr($path, 0, $colonpos)) && drupal_strip_dangerous_protocols($path) == $path;
+  // Some browsers treat \ as / so normalize to forward slashes.
+  $path = str_replace('\\', '/', $path);
+  // If the path starts with 2 slashes then it is always considered an external
+  // URL without an explicit protocol part.
+  return (strpos($path, '//') === 0)
+    // Leading control characters may be ignored or mishandled by browsers, so
+    // assume such a path may lead to an external location. The \p{C} character
+    // class matches all UTF-8 control, unassigned, and private characters.
+    || (preg_match('/^\p{C}/u', $path) !== 0)
+    // Avoid calling drupal_strip_dangerous_protocols() if there is any slash
+    // (/), hash (#) or question_mark (?) before the colon (:) occurrence - if
+    // any - as this would clearly mean it is not a URL.
+    || ($colonpos !== FALSE
+      && !preg_match('![/?#]!', substr($path, 0, $colonpos))
+      && drupal_strip_dangerous_protocols($path) == $path);
 }
 
 /**
@@ -2604,7 +2621,10 @@ function drupal_deliver_html_page($page_callback_result) {
 
         // Keep old path for reference, and to allow forms to redirect to it.
         if (!isset($_GET['destination'])) {
-          $_GET['destination'] = $_GET['q'];
+          // Make sure that the current path is not interpreted as external URL.
+          if (!url_is_external($_GET['q'])) {
+            $_GET['destination'] = $_GET['q'];
+          }
         }
 
         $path = drupal_get_normal_path(variable_get('site_404', ''));
@@ -2633,7 +2653,10 @@ function drupal_deliver_html_page($page_callback_result) {
 
         // Keep old path for reference, and to allow forms to redirect to it.
         if (!isset($_GET['destination'])) {
-          $_GET['destination'] = $_GET['q'];
+          // Make sure that the current path is not interpreted as external URL.
+          if (!url_is_external($_GET['q'])) {
+            $_GET['destination'] = $_GET['q'];
+          }
         }
 
         $path = drupal_get_normal_path(variable_get('site_403', ''));

@@ -13,6 +13,13 @@ function contactselect_menu() {
             'access arguments' => array('access content'),
             'type' => MENU_CALLBACK,
   );
+  $items['addcontactsqueue'] = array(
+            'title' => 'This is a function to add the contacts in the queue',
+            'description' => 'Callback for the add contacts queue',
+            'page callback' => 'addcontactsqueue',
+            'access arguments' => array('access content'),
+            'type' => MENU_CALLBACK,
+  );
 	return ($items);
 }
 
@@ -20,7 +27,20 @@ function contactselect_menu() {
 *		Implements functions to enable contact selection
 */
 
-
+function addcontactsqueue() {
+	watchdog('contactselect',"Made it into the addcontactsqueue routine");
+	$query = 'SELECT info_id, FirstName, LastName FROM {tblContactQueue}';
+	$result = db_query($query);
+	foreach ($result as $record) {
+		$contact = entity_create('crm_core_contact', array('type'=>'v2individual'));
+		$wrapper = entity_metadata_wrapper('crm_core_contact',$contact);
+		$wrapper->info_id = $record->info_id;
+		$wrapper->contact_name->given->set($record->FirstName);
+		$wrapper->contact_name->family->set($record->LastName);
+		$wrapper->save();
+	}
+	drupal_goto("/");
+}
 function contactselect_form_alter(&$form,&$form_state,$form_id){
 		watchdog('contactselect',"Made it into the contact select form alter routine");
 //		kpr($form);
@@ -328,6 +348,26 @@ function contactselect_views_data_alter(&$data) {
 			'sortable' => TRUE,
 		)
 		);
+		$data['crm_core_contact']['notes'] = array(
+  			'title' => t('NNotes'),
+  			'help' => t('The notes for the contact'),
+ 		 // Information for displaying the notes field
+ 			 	'field' => array(
+    		'handler' => 'views_handler_field',
+    		'click sortable' => TRUE,
+  ),
+
+  	// Information for accepting a note as a filter
+  		'filter' => array(
+    	'handler' => 'views_handler_filter_string',
+  ),
+  	// Information for sorting on a note.
+  		'sort' => array(
+    	'handler' => 'views_handler_sort',
+  ),
+);
+
+		
 }
 /**
  * Implements hook_feeds_processor_targets_alter().

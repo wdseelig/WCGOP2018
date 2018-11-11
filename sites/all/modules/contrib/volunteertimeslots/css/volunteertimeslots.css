@@ -18,8 +18,9 @@
     vertical-align: middle;
 }
 .vtstoplink a {
-    font-size: 1.5em;
+    font-size: 2.0em;
     float: left;
+    font-weight: bold;
 }
 .vtstopnickname {
     font-size: 1.5em;

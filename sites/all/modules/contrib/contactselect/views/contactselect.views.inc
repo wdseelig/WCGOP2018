@@ -32,6 +32,87 @@ function contactselect_views_data() {
 					return $data;
 }
 */
+function contactselect_views_data() {
+					watchdog('ContactSelect','Made it into the ContactQueue definition');
+					$data=array();
+					$data['tblContactQueue']['table']['group'] = t('ContactSelect');
+					$data['tblContactQueue']['table']['join']['crm_core_contact'] = array(
+  					'left_field' => 'info_id',
+ 				 		'field' => 'info_id',
+ 				 		'type' => 'INNER',
+			);
+				$data['tblContactQueue']['info_id'] = array(
+  			'title' => t('info_id'),
+  			'help' => t('The info_id of the contact'),
+ 		 // Information for displaying the info_id
+ 			 	'field' => array(
+    		'handler' => 'views_handler_field',
+    		'click sortable' => TRUE,
+  ),
+  	// Information for accepting an info_id as an argument
+  		'argument' => array(
+    	'handler' => 'views_handler_argument',
+    	'name field' => 'title', // the field to display in the summary.
+    	'numeric' => TRUE,
+  ),
+  	// Information for accepting an info_id as a filter
+  		'filter' => array(
+    	'handler' => 'views_handler_filter_numeric',
+  ),
+  	// Information for sorting on an info_id.
+  		'sort' => array(
+    	'handler' => 'views_handler_sort',
+  ),
+);
+
+$data['tblContactQueue']['FirstName'] = array(
+  			'title' => t('FirstName'),
+  			'help' => t('The First Name of the contact'),
+ 		 // Information for displaying the info_id
+ 			 	'field' => array(
+    		'handler' => 'views_handler_field',
+    		'click sortable' => TRUE,
+  ),
+  	// Information for accepting an FirstName as an argument
+  		'argument' => array(
+    	'handler' => 'views_handler_argument',
+    	'name field' => 'title', // the field to display in the summary.
+    	'numeric' => FALSE,
+  ),
+  	// Information for accepting an FirstName as a filter
+  		'filter' => array(
+    	'handler' => 'views_handler_filter_string',
+  ),
+  	// Information for sorting on a FirstName.
+  		'sort' => array(
+    	'handler' => 'views_handler_sort',
+  ),
+);
+$data['tblContactQueue']['LastName'] = array(
+  			'title' => t('LastName'),
+  			'help' => t('The LastName of the contact'),
+ 		 // Information for displaying the LastName
+ 			 	'field' => array(
+    		'handler' => 'views_handler_field',
+    		'click sortable' => TRUE,
+  ),
+  	// Information for accepting a LastName as an argument
+  		'argument' => array(
+    	'handler' => 'views_handler_argument',
+    	'name field' => 'title', // the field to display in the summary.
+    	'numeric' => FALSE,
+  ),
+  	// Information for accepting an LastName as a filter
+  		'filter' => array(
+    	'handler' => 'views_handler_filter_string',
+  ),
+  	// Information for sorting on a LastName.
+  		'sort' => array(
+    	'handler' => 'views_handler_sort',
+  ),
+);
+					return $data;
+}
 function contactselect_views_query_alter(&$view, &$query) {
 				watchdog('contactselect','Made it into the hook_views_query routine');
 				if ($view->name == 'ContactsWithTags'){
