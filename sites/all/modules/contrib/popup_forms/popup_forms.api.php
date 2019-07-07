@@ -28,7 +28,7 @@
  *   - 'access arguments': array of arguments to pass into access callback.
  *   - 'autopage': if set to TRUE, then non-javascript page for this form
  *     will be automatically created (useful for users with disabled
- *     javascript). Use popup_forms_link() function to generate link to this
+ *     javascript). Use popup_forms_build_link() function to generate link to this
  *     page.
  *   - 'title': popup form title. Will show in the header of popup.
  */

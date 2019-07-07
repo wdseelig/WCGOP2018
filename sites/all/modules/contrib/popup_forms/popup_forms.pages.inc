@@ -18,7 +18,7 @@
  */
 function popup_forms_get_ajax_form($form_key) {
   $form_data = popup_forms_get_form_data($form_key);
-  // Check popup form existance.
+  // Check popup form existence.
   if ($form_data === FALSE) {
     return MENU_NOT_FOUND;
   }

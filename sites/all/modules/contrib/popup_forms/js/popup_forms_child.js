@@ -40,7 +40,7 @@
   Drupal.popup_forms_child.closeDialog = function(event, ui) {
     // Remove iframe from parent document
     $.postMessage({type: 'close_dialog', index: Drupal.settings.popup_forms_child.index}, Drupal.settings.popup_options.backurl, parent);
-  }
+  };
 
   /**
    * Check if the given variable is an object.
@@ -51,6 +51,6 @@
 
   Drupal.behaviors.popup_forms_child = {
     attach: Drupal.popup_forms_child.attach
-  }
+  };
 
 })(jQuery);

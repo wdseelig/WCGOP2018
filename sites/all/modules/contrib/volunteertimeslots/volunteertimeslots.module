@@ -166,16 +166,35 @@ function volunteertimeslots_views_api() {
 *						then ask them to supply a nickname
 */
             } elseif ($vtsusrobj->email != '') {
-                $gourl = popup_forms_link('vtspopups_nickname_form',
-                	t('Connect'));
-                $vtshdr .= $gourl . '</div>';
+            	$result = db_query("
+					SELECT * FROM {gopuser}
+					WHERE email LIKE CONCAT(:usremail,'%')" ,
+					array(':usremail' => $vtsusrobj->email));
+					if ($record = $result->fetchObject()){					
+            			popup_forms_parent_js();
+            			$js = "
+      					(function($) {
+        				$(document).ready(function() {
+          				popupFormsFormShow('vtspopups_nickname_form', null);
+        				});
+      					})(jQuery);
+   				 		";
+    					drupal_add_js($js, array(
+    						'type' => 'inline',
+    						'scope' => 'footer',
+    						'weight' => 5));
+    					} else {
+    						drupal_goto('BV');
+    					}
 /*
 *						If the user has neither an email address nor a handle, then ask them
-*						to log in to the system
+*						to log in to the system using the popup window
 */
             	} else {
-                $gourl = popup_forms_link('vtspopups_login_form',t('Connect'));
-                $vtshdr .= $gourl . '</div>';
+	        	$vtshdr .= popup_forms_build_link('vtspopups_login_form','Connect');
+	        	$vtshdr .= '</div>';
+	        	
+
             }
 /*
 *						Create the content for the nickname area in the view
@@ -309,6 +328,7 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 	*		will have stored the user's entry in the $vtsuserobj, so we start by
 	*		checking to see if the user entered anything.
 	*/
+	
 	if ($vtsusrobj->email != "") {       //Has user entered an email?
 			$matchvalue = $vtsusrobj->email;
 			$result = db_query("
@@ -322,7 +342,7 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 						drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
 					}
 			}
-			else{
+		}	
 /*		NOTE [8/19/2018]:  This is an unhandled case.  The user is not logged in,
 *			but has entered an email address, and that email address is NOT in the
 *			gopuser table.  I think what I ought to do in this case is update the
@@ -331,7 +351,24 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 *			is the code below this note, which will set the url to the daily
 *			sign in sheet, and then pop up the nickname form.
 */
-			}
+			popup_forms_parent_js();
+			$js = "
+      		(function($) {
+          	popupFormsFormShow('vtspopups_nickname_form', null);
+      		})(jQuery);
+    		";
+    		drupal_add_js($js, 'inline');
+}			
+/*		$options = array(
+				'attributes' => array('class' => array('popup-forms-hotlink')),
+				'data-popup-forms' => 'vtspopups_nickname_form',
+				'destination' => 'vtsdailyviews/' . $vtsusrobj->dayid
+				);
+			$gourl = url('/form/vtspopups_nickname_form', $options);
+			watchdog('vts', "Line 342");
+			drupal_goto($gourl, $options);
+
+*/			
 /*
 *			NOTE [7/11/17]:  This is the case in which the user is not logged in,
 *			whose email address was in the gopuser table, but for whom there is no
@@ -343,15 +380,15 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 *			NOTE: [7/15/17]  I figured out how to bring up the nickname popup form
 *			so now I'm doing that.
 */
-			$gourl = url('vtsdailyview/' . $vtsusrobj->dayid . '?pfnickname=1');
-			$options=array('query' => array('pfnickname' => '1'));
-			drupal_goto($gourl, $options);
+//			$gourl = url('vtsdailyview/' . $vtsusrobj->dayid . '?pfnickname=1');
+//			$options=array('query' => array('pfnickname' => '1'));
+//			drupal_goto($gourl, $options);
 /*
 *			NOTE:  The code below is what I first tried in order to bring up the
 *			nickname popup form on the page.  This DOES bring up the form, but
 *			NOT as a popup, so I ended up using the code above.  I believe that this
 *			fails to bring up the form as a popup because the Javascript to load the
-*			form as a popup never gets put on the page.  [In the code above, this
+*			form as a popup never is put on the page.  [In the code above, this
 *			script gets loaded on the page by the vtspopups_init function, but that
 *			does not happen here.]
 *
@@ -359,15 +396,13 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 *			$options=array('query' => array('destination' => $vtsusrobj->dayid));
 *			drupal_goto($gourl);
 */
-	}
 /*
 *			NOTE [7/11/17]:  This is the case in which the user is not logged in, but
 *			did not enter an email address in the popup login form.  We just send them
 *			back to the dailyview page [where, presumably, they will figure out that
 *			they need to provide us with an email address].
 */
-			drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
-}
+//			drupal_goto('vtsdailyview/' . $vtsusrobj->dayid);
 /*
 *			NOTE [7/11/17]:  This is the case in which the user is logged in but whose
 *			email address on our site does not match anything in the gopuser table.
@@ -375,8 +410,9 @@ function getvtsusrcreds($user, &$vtsusrobj) {
 *			a good deal more complex that I could do [like enter their site email in
 *			the gopuser table and then give them an opportunity to pick a nickname]?
 */
-		drupal_goto('BV');
+//		drupal_goto('BV');
 }
+
 function setvtsusrcreds($user,&$vtsuser)  {
 global $user;
 

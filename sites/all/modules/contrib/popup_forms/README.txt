@@ -1,9 +1,14 @@
 Installation and requirements
 
-Popup forms require jquery.postmessage plugin.
-Download it here https://github.com/cowboy/jquery-postmessage
-and place into libraries directory so that plugin will be at
+Popup forms require jquery.postmessage and jquery-deparam plugins.
+
+Download jquery.postmessage at https://github.com/chrissrogers/jquery-postmessage
+and place into libraries directory so that the plugin is at
 sites/all/libraries/jquery.postmessage/jquery.ba-postmessage.min.js
+
+Download jquery-deparam at https://github.com/chrissrogers/jquery-deparam
+and place into libraries directory so that the plugin is at
+sites/all/libraries/jquery-deparam/jquery-deparam.min.js
 
 How to use this module
 

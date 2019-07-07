@@ -80,18 +80,20 @@ function popup_forms_deliver_popup_form($page_callback_result) {
       $lib_path = 'sites/all/libraries/jquery.postmessage';
     }
     drupal_add_js($lib_path . '/jquery.ba-postmessage.min.js', array('group' => JS_LIBRARY));
-    drupal_add_js(
-      array(
-        'popup_forms' => array(
-          'form_values' => array(
-            'values' => $form['#popup_form_state']['values'],
-            'finish_dialog_index' => $form['#popup_form_state']['finish_dialog_index'],
-          ),
-          'ref' => $_GET['ref'],
+    $result = array(
+      'popup_forms' => array(
+        'form_values' => array(
+          'values' => $form['#popup_form_state']['values'],
+          'finish_dialog_index' => $form['#popup_form_state']['finish_dialog_index'],
         ),
+        'ref' => $_GET['ref'],
       ),
-      'setting'
     );
+    if (isset($form['#popup_form_state']['popup_forms_redirect'])) {
+      $result['popup_forms']['form_values']['popup_forms_redirect'] = $form['#popup_form_state']['popup_forms_redirect'];
+    }
+
+    drupal_add_js($result, 'setting');
     drupal_add_js(drupal_get_path('module', 'popup_forms') . '/js/popup_forms_submit.js', array('defer' => TRUE));
     print drupal_get_js();
     drupal_page_footer();
@@ -143,7 +145,7 @@ function popup_forms_process_buttons(&$form_element) {
 }
 
 /**
- * Additonal submit handler for popup forms (close-handler).
+ * Additional submit handler for popup forms (close-handler).
  *
  * Check if popup form dialog should be closed.
  */
@@ -152,10 +154,19 @@ function popup_forms_form_submit_handler($form, &$form_state) {
   if (!empty($form['#programmed']) || !empty($form_state['rebuild'])) {
     return;
   }
+
+  if (isset($_GET['destination'])) {
+    $form_state['popup_forms_redirect'] = url($_GET['destination']);
+  }
+  elseif (isset($form_state['redirect'])) {
+    $form_state['popup_forms_redirect'] = url($form_state['redirect']);
+  }
+
   // Set 'no_redirect' flag for ajax forms.
   if (empty($form_state['popup_forms_not_ajax'])) {
     $form_state['no_redirect'] = TRUE;
   }
+
   // Check if clicked button is close button.
   $button_id = isset($form_state['triggering_element']['#id']) ? $form_state['triggering_element']['#id'] : NULL;
   $button_name = isset($form_state['triggering_element']['#name']) ? $form_state['triggering_element']['#name'] : NULL;
@@ -163,11 +174,13 @@ function popup_forms_form_submit_handler($form, &$form_state) {
   && !in_array($button_id, $form['#popup_forms_ajax_form_data']['close buttons'])) {
     return;
   }
+
   // Non-ajax popup form.
   if (!empty($form_state['popup_forms_not_ajax'])) {
     $form_state['redirect'] = isset($_GET['destination']) ? $_GET['destination'] : $_GET['q'];
     return;
   }
+
   // Set index, which dialog should be finished.
   $form_state['finish_dialog_index'] = $_GET['popup_forms_num'];
 }
@@ -216,11 +229,14 @@ function popup_forms_parent_js() {
   $m = drupal_get_path('module', 'popup_forms');
   if (function_exists('libraries_get_path')) {
     $path = libraries_get_path('jquery.postmessage');
+    $path_deparam = libraries_get_path('jquery-deparam');
   }
   else {
     $path = 'sites/all/libraries/jquery.postmessage';
+    $path_deparam = 'sites/all/libraries/jquery-deparam';
   }
   drupal_add_js("$path/jquery.ba-postmessage.min.js", array('group' => JS_LIBRARY));
+  drupal_add_js("$path_deparam/jquery-deparam.min.js", array('group' => JS_LIBRARY));
   drupal_add_css("$m/css/popup_forms.parent.css");
   drupal_add_js("$m/js/popup_forms_parent.js");
 }
@@ -327,7 +343,7 @@ function popup_forms_get_form_data($form_key, $reset = FALSE) {
  * @return string
  *   Rendered link.
  */
-function popup_forms_link($form_id, $title, $arguments = array(), $options = array()) {
+function popup_forms_build_link($form_id, $title, $arguments = array(), $options = array()) {
   $form_data = popup_forms_get_form_data($form_id);
 
   if ($form_data['autopage']) {

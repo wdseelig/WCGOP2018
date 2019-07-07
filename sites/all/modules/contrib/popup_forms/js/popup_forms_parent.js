@@ -7,7 +7,7 @@
   // Behavior for "popup forms" links.
   Drupal.behaviors.popup_form_link = {
     attach: function(context) {
-      $('a.popup-forms-hotlink').click(function(){
+      $('a.popup-forms-hotlink').click(function() {
         var data = $.parseJSON($(this).attr('data-popup-forms'));
         form_id = data.form_id;
         delete data.form_id;
@@ -15,13 +15,13 @@
         return false;
       });
     }
-  }
+  };
 
-  Drupal.popup_forms = Drupal.popup_forms || {dialogs: Array()};
+  Drupal.popup_forms = Drupal.popup_forms || {dialogs: []};
   Drupal.popup_forms.loadCallbacks = {};
   /**
    * Open a jquery ui dialog
-   * @param options
+   * @param c_options
    *   Properties of the modal frame to open:
    *   - url : the URL of the page to open. If not provided, you have to handle the loading yourself
    *   - method(get) : What method should use to load the url (get/post)
@@ -72,7 +72,7 @@
   };
 
   /**
-   * Inititalize the dialog.
+   * Initialize the dialog.
    */
   Drupal.popup_forms.create = function (index) {
     var self = this;
@@ -80,7 +80,7 @@
     // where the horizontal scrollbar is always rendered, no matter how wide the
     // iframe element is defined.
     // we need to set z-index to negative value for prepend some "blink" effect in Chrome
-    var iframe = jQuery('<iframe style="z-index:-10" frameborder="0" allowtransparency class="popup-forms-iframe" id="popup-forms-iframe-' + index + '" name="popup-forms-iframe' + index + '"' + (jQuery.browser.msie ? ' scrolling="yes"' : '') + '/>');
+    var iframe = jQuery('<iframe style="z-index:-10" frameborder="0" allowtransparency class="popup-forms-iframe" id="popup-forms-iframe-' + index + '" name="popup-forms-iframe' + index + '"' + (typeof(jQuery.browser) != 'undefined' && jQuery.browser.msie ? ' scrolling="yes"' : '') + '/>');
     jQuery('body').append(iframe);
     iframeHeight = jQuery(document).height();
     jQuery('#popup-forms-iframe-' + index).css('height', iframeHeight + 'px');
@@ -126,7 +126,7 @@
   Drupal.popup_forms.closeDialog = function(index) {
     // remove iframe
     jQuery('#popup-forms-iframe-' + index).remove();
-  }
+  };
 
   /**
    * Returns parameters of window (called from child iframe)
@@ -137,7 +137,7 @@
       wndHeight: jQuery(window).height(),
       wndWidth: jQuery(window).width()
     };
-  }
+  };
 
   /**
    * Called from child js, when dialod is loaded
@@ -153,7 +153,7 @@
 
 
 /**
- * Show  form in ajax popup
+ * Show a form in ajax popup.
  * @param string form_id drupal form id
  * @param string callback called when dialog finished
  * @param form_data various data, that transfered to drupal form callback
@@ -166,6 +166,9 @@ function popupFormsFormShow(form_id, callback, form_data, dialog_options) {
   }
   var loc = window.location;
   var query_url = "" + loc.protocol + "//" + loc.host + Drupal.settings.basePath + '?q=ajax-get-popup-form/' + form_id;
+  if (typeof(dialog_options.destination) != 'undefined') {
+    query_url += '&destination=' + encodeURIComponent(dialog_options.destination);
+  }
   for (param in form_data) {
     query_url += '&' + param + '=' + encodeURIComponent(form_data[param]);
   }
@@ -180,6 +183,8 @@ function popupFormsFormShow(form_id, callback, form_data, dialog_options) {
       closeOnEscape: false,
       resizable: false,
       draggable: true,
+      autoredirect: false,
+      autorefresh: false,
       autoresize: true
     };
     jQuery.extend(options, dialog_options);
@@ -194,17 +199,26 @@ function popupFormsFormShow(form_id, callback, form_data, dialog_options) {
 }
 
 /**
- * This callback executed from dialog child JS, when it ready to close
+ * This callback is executed from dialog child JS, when the dialog is closed.
  * @return void
  */
 function popupFormsFinishDialog(returnedData) {
-  returnedData = JSON.parse(decodeURIComponent(returnedData.replace(/\+/g, '%20')))
   var dialogIndex = returnedData.finish_dialog_index;
   // remove iframe
   jQuery('#popup-forms-iframe-' + dialogIndex).remove();
+  var options = Drupal.popup_forms.dialogs[dialogIndex].options;
+
   // execute callback
-  if (Drupal.popup_forms.dialogs[dialogIndex].options.popupFormsCallback) {
-    Drupal.popup_forms.dialogs[dialogIndex].options.popupFormsCallback(returnedData);
+  if (options.popupFormsCallback) {
+    options.popupFormsCallback(returnedData);
+  }
+
+  if (options.autoredirect && returnedData.popup_forms_redirect) {
+    window.location.href = returnedData.popup_forms_redirect;
+    return;
+  }
+  if (options.autorefresh) {
+    document.location.reload(true);
   }
 }
 
@@ -222,45 +236,9 @@ function popupFormsSetDialogLoadingCallback(func, formId) {
   Drupal.popup_forms.loadCallbacks[formId] = func;
 }
 
-/**
- * Implement $.unserialize
- */
-(function($){
-  if (typeof $.unserialize != 'function') {
-    $.unserialize = function(serializedString){
-      var str = decodeURI(serializedString);
-      var pairs = str.split('&');
-      var obj = {}, p, idx, val;
-      for (var i = 0, n = pairs.length; i < n; i++) {
-        p = pairs[i].split('=');
-        idx = p[0];
-
-        if (idx.indexOf("[]") == (idx.length - 2)) {
-          // Eh um vetor
-          var ind = idx.substring(0, idx.length - 2)
-          if (obj[ind] === undefined) {
-            obj[ind] = [];
-          }
-          obj[ind].push(p[1]);
-        }
-        else {
-          if (p[1] == "true") {
-            p[1] = true;
-          }
-          if (p[1] == "false") {
-            p[1] = true;
-          }
-          obj[idx] = p[1];
-        }
-      }
-      return obj;
-    };
-  }
-})(jQuery);
-
 jQuery.receiveMessage(
-  function(e){
-    data = jQuery.unserialize(e.data);
+  function(e) {
+    data = jQuery.deparam(e.data);
     switch (data.type) {
       case 'finish_loading':
         Drupal.popup_forms.finishLoading(data.index);
@@ -275,7 +253,7 @@ jQuery.receiveMessage(
         break;
     }
   },
-  function(origin){
+  function(origin) {
     return origin.indexOf(window.location.hostname) != -1;
   }
 );

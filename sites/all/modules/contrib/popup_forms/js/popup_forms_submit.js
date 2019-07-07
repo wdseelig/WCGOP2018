@@ -6,7 +6,7 @@
 jQuery(document).ready(
   function () {
     jQuery.postMessage(
-      {type: 'finish_dialog', form_state: JSON.stringify(Drupal.settings.popup_forms.form_values)},
+      {type: 'finish_dialog', form_state: Drupal.settings.popup_forms.form_values},
       Drupal.settings.popup_forms.ref,
       parent
     );
