@@ -170,19 +170,17 @@ function volunteertimeslots_views_api() {
 					SELECT * FROM {gopuser}
 					WHERE email LIKE CONCAT(:usremail,'%')" ,
 					array(':usremail' => $vtsusrobj->email));
-					if ($record = $result->fetchObject()){					
+					if ($record = $result->fetchObject()){	
+									watchdog('popup_forms','Line 174');				
             			popup_forms_parent_js();
             			$js = "
       					(function($) {
         				$(document).ready(function() {
-          				popupFormsFormShow('vtspopups_nickname_form', null);
+          				popupFormsFormShow('vtspopups_nickname_form', null, null, {});
         				});
       					})(jQuery);
    				 		";
-    					drupal_add_js($js, array(
-    						'type' => 'inline',
-    						'scope' => 'footer',
-    						'weight' => 5));
+    					drupal_add_js($js, 'inline');
     					} else {
     						drupal_goto('BV');
     					}
