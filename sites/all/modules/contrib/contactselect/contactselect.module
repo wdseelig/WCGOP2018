@@ -284,7 +284,7 @@ function contactselect_entity_property_info_alter(&$info) {
 			$properties = &$info['wcgopindividualinfo']['properties'];
 			$properties['email'] = array(
 			'type' => 'text',
-			'schema_field' =>'email',
+			'schema field' =>'email',
 			'required' => FALSE,
 			'description' => t('The entity property definition of email'),
 			'label' => t('email'),
@@ -335,8 +335,8 @@ function contactselect_views_data_alter(&$data) {
 		'help' => t('Connect a crm_core_contact to its info'),
 		'relationship' => array(
 			'base' => 'wcgopindividualinfo',
-			'base_field' => 'info_id',
-			'field' => 'info_id',
+			'base field' => 'info_id',
+			'relationship field' => 'info_id',
 			'handler' => 'views_handler_relationship',
 			'label' => t('Contact to Info'),
 			'help' => t('Connect a crm_core_contact to wcgopindividualinfo'),

@@ -176,7 +176,7 @@ function volunteertimeslots_views_api() {
             			$js = "
       					(function($) {
         				$(document).ready(function() {
-          				popupFormsFormShow('vtspopups_nickname_form', null, null, {});
+          				popupFormsFormShow('vtspopups_nickname_form', null, {}, {});
         				});
       					})(jQuery);
    				 		";

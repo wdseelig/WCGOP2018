@@ -32,6 +32,7 @@ function contactselect_views_data() {
 					return $data;
 }
 */
+/*
 function contactselect_views_data() {
 					watchdog('ContactSelect','Made it into the ContactQueue definition');
 					$data=array();

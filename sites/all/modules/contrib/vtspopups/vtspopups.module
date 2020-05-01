@@ -110,7 +110,7 @@ global $user;
 $vtsuser =  $_SESSION['vtsusrobj'];
 $vtsuser->handle = $form_state['input']['handle'];
 setvtsusrcreds($user,$vtsuser);  //Store user input in db
-$_SESSION['vtsusrobj'] = $vtsuser;
+// $_SESSION['vtsusrobj'] = $vtsuser;
 drupal_goto('vtsdailyview/' . $vtsuser->dayid);
 }
 

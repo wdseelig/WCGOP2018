@@ -47,7 +47,7 @@
     
     <?php if ($data->show_results == 'afterclose'): ?>
         <?php $date = format_date($data->end_date, 'long'); ?>
-        <p><?php print t('The results of this poll will be available after @date.', array('@date' => $date)); ?></p>
+        <p><?php print t('The results of this election will be available after the poll has closed.', array('@date' => $date)); ?></p>
     <?php endif; ?>
 
     <?php if ($votes): ?>
