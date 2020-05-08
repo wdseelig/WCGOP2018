@@ -84,6 +84,8 @@ function advpoll_get_data($node) {
     $data['electoral'] = advpoll_has_data($options, 'electoral');
     $data['write_in'] = advpoll_has_data($options, 'writein');
     $data['block'] = advpoll_has_data($options, 'block');
+    $data['email'] = advpoll_has_data($options, 'email');
+    $data['password'] = advpoll_has_data($options, 'password');
   }
 
   return (object) $data;
@@ -163,6 +165,9 @@ function advpoll_get_form_data($form_state, $index = 0) {
     $data['electoral'] = advpoll_has_data($options, 'electoral');
     $data['write_in'] = advpoll_has_data($options, 'writein');
     $data['block'] = advpoll_has_data($options, 'block');
+    $data['email'] = advpoll_has_data($options, 'email');
+    $data['password'] = advpoll_has_data($options, 'password');
+    $data['display_results'] = false;
   }
 
   return (object) $data;

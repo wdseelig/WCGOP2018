@@ -2,5 +2,7 @@
 sites/*/settings*.php
 
 # Ignore paths that contain user-generated content.
+files/
+.DS_Store
 sites/*/files
 sites/*/private

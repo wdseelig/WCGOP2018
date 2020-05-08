@@ -48,8 +48,12 @@
 
     <?php if ($data->show_results == 'afterclose'): ?>
         <?php $date = format_date($data->end_date, 'long'); ?>
-        <p><?php print t('The results of this poll will be available after @date.', array('@date' => $date)); ?></p>
+        <p><?php print t('The results of this election will be available after the poll has closed.', array('@date' => $date)); ?></p>
     <?php endif; ?>
+
+    <p><?php print $eligible['reason']; ?></p>
+
+
 
     <?php if ($votes): ?>
     <div class="poll-message"><?php print t('Thank you for voting.'); ?></div>

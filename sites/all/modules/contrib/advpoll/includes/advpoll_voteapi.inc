@@ -221,20 +221,23 @@ function advpoll_compare($a, $b) {
  *   TRUE or FALSE.
  */
 function advpoll_user_eligibility($node) {
+    $data = advpoll_get_data($node);
+    if ($data->password && ($data->state == 'open')) {
+        return TRUE;
+    }
   if (!user_access('vote on polls')) {
     return FALSE;
   }
   global $user;
-  $data = advpoll_get_data($node);
 
   if ($data->write_in && !user_access('add write-ins')) {
     return FALSE;
   }
 
   if ($data->electoral) {
-    if (!advpoll_check_electoral_list($user->uid, $node->nid)) {
-      return FALSE;
-    }
+      if (!advpoll_check_electoral_list($user->uid, $node->nid)) {
+          return FALSE;
+      }
   }
 
   if ($data->state !== 'open') {
@@ -259,12 +262,12 @@ function advpoll_user_eligibility($node) {
     $criteria['value_type'] = 'percent';
     $criteria['uid'] = $user->uid;
     if (!$user->uid) {
-      $criteria['vote_source'] = ip_address();
+      $criteria['vote_source'] = $_SESSION['voting_password'] ?? ip_address();
     }
 
     $results = votingapi_select_votes($criteria);
 
-    if ($results) {
+    if (count($results) > 0) {
       return FALSE;
     }
   }
@@ -296,9 +299,53 @@ function advpoll_check_electoral_list($uid, $nid) {
 
   return FALSE;
 }
-
 /**
- * Add votes for a given poll.
+ * Checks user against password list.
+ *
+ *
+ * @param $nid
+ *   Node ID of the poll.
+ *
+ *
+ */
+function advpoll_check_password_list($nid)
+{
+    $eligible = array();
+    $password = $_SESSION['voting_password'] ?? null;
+    if (is_null($password)) {
+        $_SESSION['voting_password'] = null;
+        $eligible['voting_status'] = 'canvote';
+        return $eligible;
+    }
+    $result = db_query("
+        SELECT vote_id
+        FROM {votingapi_vote}
+        WHERE entity_id = :nid AND vote_source LIKE :password
+      ", array(':nid' => $nid, ':password' => $password))->fetchField();
+
+    if ($result) {
+        $eligible['voting_status'] = 'alreadyvoted';
+        return $eligible;
+    }
+
+    $result = db_query("
+        SELECT nid
+        FROM {advpoll_password_list}
+        WHERE nid = :nid AND password LIKE :password
+        ", array(':nid' => $nid, ':password' => $password))->fetchField();
+
+    if (!$result) {
+        $_SESSION['voting_password'] = null;
+        $eligible['voting_status'] = 'notregistered';
+        return $eligible;
+    }
+    else {
+        $eligible['voting_status'] = 'canvote';
+        return $eligible;
+    }
+}
+
+/*** Add votes for a given poll
  *
  * @param array $vote
  *   An associative array that is used to determine the method in which the vote
@@ -309,6 +356,7 @@ function advpoll_check_electoral_list($uid, $nid) {
  *   - mode: normal, cookie, or unlimited.
  *   - duration: duration is minutes that the cookie will last if one is set.
  */
+
 function advpoll_add_votes($vote) {
   /* Normal voting uses the votingapi to record user id or ip based on
    * authentication.
@@ -319,6 +367,7 @@ function advpoll_add_votes($vote) {
         'entity_id' => $vote['nid'],
         'value' => $vote['value'],
         'tag' => $vote['tag'],
+        'vote_source' => $vote['vote_source'] ?? null,
     );
   }
   else {
@@ -342,7 +391,7 @@ function advpoll_add_votes($vote) {
         'value' => $vote['value'],
         'tag' => $vote['tag'],
         'uid' => '',
-        'vote_source' => time(),
+        'vote_source' => $vote['vote_source'] ?? time(),
     );
   }
 
@@ -418,7 +467,7 @@ function advpoll_radio_selected($choices, $vote) {
  * @return array
  *   Unique choice IDs selected by the user.
  */
-function advpoll_get_user_votes($nid) {
+function advpoll_get_user_votes($nid, $data = null) {
   global $user;
   $votes = array();
   $criteria = array();
@@ -427,10 +476,21 @@ function advpoll_get_user_votes($nid) {
   $criteria['value_type'] = 'percent';
   $criteria['uid'] = $user->uid;
   if (!$user->uid) {
-    $criteria['vote_source'] = ip_address();
+    $criteria['vote_source'] = $_SESSION['voting_password'] ?? ip_address();
+    $results = votingapi_select_votes($criteria);
   }
+    if($data->display_results) {
 
-  $results = votingapi_select_votes($criteria);
+        if ($data->behavior === 'approval') {
+            $tabulated = advpoll_approval_vote($results);
+        } elseif ($data->behavior === 'pool') {
+            $tabulated = advpoll_pooled_vote($results);
+        } else {
+            $tabulated = advpoll_default_vote($results);
+        }
+        return $tabulated;
+
+    }
 
   if ($results) {
     foreach ($results as $result) {
