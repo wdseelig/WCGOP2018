@@ -599,6 +599,8 @@ function _votingapi_prep_vote(&$vote) {
       'prepped' => TRUE
     );
   }
+  if ($_SESSION['voting_password'])
+      $vote['uid'] = 0;
 }
 
 /**

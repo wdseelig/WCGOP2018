@@ -329,9 +329,10 @@ function advpoll_check_password_list($nid)
     }
 
     $result = db_query("
-        SELECT nid
+        SELECT password
         FROM {advpoll_password_list}
-        WHERE nid = :nid AND password LIKE :password
+        WHERE ( nid = :nid OR nid = 0)
+        AND password LIKE :password
         ", array(':nid' => $nid, ':password' => $password))->fetchField();
 
     if (!$result) {
@@ -475,7 +476,9 @@ function advpoll_get_user_votes($nid, $data = null) {
   $criteria['entity_type'] = 'node';
   $criteria['value_type'] = 'percent';
   $criteria['uid'] = $user->uid;
-  if (!$user->uid) {
+  if ($data->password)
+      $criteria['uid'] = 0;
+  if (!$criteria['uid']) {
     $criteria['vote_source'] = $_SESSION['voting_password'] ?? ip_address();
     $results = votingapi_select_votes($criteria);
   }
