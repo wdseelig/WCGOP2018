@@ -4,5 +4,6 @@ sites/*/settings*.php
 # Ignore paths that contain user-generated content.
 files/
 .DS_Store
+.idea/*
 sites/*/files
 sites/*/private
