@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Module file for the multiform module, which creates a forms.
+ */
+
+/**
  * Returns a form containing a number of other forms.
  *
  * When the forms are submitted their first button is pressed in array order.
@@ -41,9 +46,12 @@ function multiform_get_form() {
     '#attributes' => array(),
   );
   // This is where buttons will be collected.
-  $form['buttons'] = array();
-  $form['buttons']['#weight'] = 1000;
-  $form['buttons']['#build_id'] = $build_id;
+  $form['buttons'] = array(
+    '#type' => 'actions',
+    '#build_id' => $build_id,
+    '#weight' => 1000,
+    '#attributes' => array(),
+  );
   $form_state_save = array();
   $button_names = array();
   // The only way to support $_GET would be to accept $form_state. Maybe later.
@@ -57,7 +65,13 @@ function multiform_get_form() {
         // names because the buttons are used in the multiform but their values
         // in $_POST (if it exists) needs to be handed down to each form so
         // those can recognize the button press.
-        $name = isset($button_elements['#name']) ? $button_elements['#name'] : 'op';
+        $name = 'op';
+        if (is_array($button)) {
+          $name = isset($button['#name']) ? $button['#name'] : 'op';
+        }
+        else {
+          $name = isset($button_elements['#name']) ? $button_elements['#name'] : 'op';
+        }
         $button_names[$name] = $name;
       }
     }
@@ -116,7 +130,11 @@ function multiform_get_form() {
     // We forced $form_state['no_redirect'] to TRUE above, so unset it in order
     // to allow the redirection to proceed.
     unset($redirect['no_redirect']);
-    drupal_redirect_form($redirect);
+    $errors = form_get_errors();
+    // Do not redirect with errors.
+    if (empty($errors)) {
+      drupal_redirect_form($redirect);
+    }
   }
   return $form;
 }
