@@ -213,8 +213,7 @@ function votingapi_votingapi_storage_select_votes($criteria, $limit) {
   $query = db_select('votingapi_vote')->fields('votingapi_vote');
   foreach ($criteria as $key => $value) {
     if ($key == 'timestamp') {
-        if (!isset($_SESSION['voting_password']))
-            $query->condition($key, $value, '>');
+      $query->condition($key, $value, '>');
     }
     else {
       $query->condition($key, $value, is_array($value) ? 'IN' : '=');
@@ -223,8 +222,7 @@ function votingapi_votingapi_storage_select_votes($criteria, $limit) {
   if (!empty($limit)) {
     $query->range(0, $limit);
   }
-  $x = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-  return $x;
+  return $query->execute()->fetchAll(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -599,8 +597,6 @@ function _votingapi_prep_vote(&$vote) {
       'prepped' => TRUE
     );
   }
-  if ($_SESSION['voting_password'])
-      $vote['uid'] = 0;
 }
 
 /**
