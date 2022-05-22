@@ -86,6 +86,8 @@ function advpoll_get_data($node) {
     $data['block'] = advpoll_has_data($options, 'block');
     $data['email'] = advpoll_has_data($options, 'email');
     $data['password'] = advpoll_has_data($options, 'password');
+    $data['attendance'] = advpoll_has_data($options, 'attendance');
+    $data['showvote'] = advpoll_has_data($options, 'showvote');
   }
 
   return (object) $data;
@@ -167,7 +169,10 @@ function advpoll_get_form_data($form_state, $index = 0) {
     $data['block'] = advpoll_has_data($options, 'block');
     $data['email'] = advpoll_has_data($options, 'email');
     $data['password'] = advpoll_has_data($options, 'password');
+    $data['attendance'] = advpoll_has_data($options, 'attendance');
     $data['display_results'] = false;
+ //   var_dump($options);
+ //   exit;
   }
 
   return (object) $data;

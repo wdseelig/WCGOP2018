@@ -330,7 +330,7 @@ function advpoll_check_password_list($nid)
 
     $result = db_query("
         SELECT password
-        FROM {advpoll_password_list}
+        FROM {advpoll_password_list_V2}
         WHERE ( nid = :nid OR nid = 0)
         AND password LIKE :password
         ", array(':nid' => $nid, ':password' => $password))->fetchField();

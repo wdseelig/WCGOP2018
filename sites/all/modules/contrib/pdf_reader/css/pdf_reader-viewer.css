@@ -31,7 +31,7 @@ select {
   top: 0px;
   padding-top: 6px;
   padding-bottom: 24px;
-  background-color: #404040;
+  background-color: #b3eeff;
   background-image: url(images/texture.png);
   width: 100%;
   height: 100%;
@@ -52,7 +52,7 @@ select {
 }
 
 #viewerContainer:-moz-full-screen {
-  background-color: #404040;
+  background-color: #b3eeff;
   background-image: url(images/texture.png);
   width: 100%;
   height: 100%;
@@ -65,7 +65,7 @@ select {
 
 #viewerContainer:full-screen {
   top: 0px;
-  background-color: #404040;
+  background-color: #b3eeff;
   background-image: url(images/texture.png);
   width: 100%;
   height: 100%;
@@ -199,6 +199,7 @@ html[dir='rtl'] #sidebarContent {
   right: 0;
   bottom: 0;
   left: 0;
+  background-color: #b3eeff !important;
 }
 
 .toolbar {
@@ -556,7 +557,7 @@ html[dir='rtl'] .dropdownToolbarButton {
   max-width: 120px;
   padding: 3px 2px 2px;
   overflow: hidden;
-  background: url(images/toolbarButton-menuArrows.png) no-repeat;
+  background: url(images/toolbarButton-menuArrows.png) no-repeat;.ndfHFb-c4YZDc-cYSp0e
 }
 html[dir='ltr'] .dropdownToolbarButton {
   background-position: 95%;

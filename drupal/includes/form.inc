@@ -1164,14 +1164,14 @@ function drupal_validate_form($form_id, &$form, &$form_state) {
   // If the session token was set by drupal_prepare_form(), ensure that it
   // matches the current user's session.
   if (isset($form['#token'])) {
-    if (!drupal_valid_token($form_state['values']['form_token'], $form['#token'])) {
-      $path = current_path();
-      $query = drupal_get_query_parameters();
-      $url = url($path, array('query' => $query));
-
+    if (!drupal_valid_token($form_state['values']['form_token'], $form['#token']) || !empty($form_state['invalid_token'])) {
       // Setting this error will cause the form to fail validation.
-      form_set_error('form_token', t('The form has become outdated. Copy any unsaved work in the form below and then <a href="@link">reload this page</a>.', array('@link' => $url)));
-
+      form_set_error('form_token', t('The form has become outdated. Copy any unsaved work in the form below and then reload this page.'));
+      // Ignore all submitted values.
+      $form_state['input'] = array();
+      $_POST = array();
+      // Make sure file uploads do not get processed.
+      $_FILES = array();
       // Stop here and don't run any further validation handlers, because they
       // could invoke non-safe operations which opens the door for CSRF
       // vulnerabilities.

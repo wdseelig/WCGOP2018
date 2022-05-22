@@ -712,13 +712,13 @@ function advpoll_merge_writein_form_submit($form, &$form_state) {
   }
 }
 function advpoll_display_convention_loggedin_data ($output) {
-//	echo ('<pre>');
-//	var_dump($output);
-//	echo ('</pre>');
-//	exit;
-	print ($output);
+	echo ('<pre>');
+	echo ('Made it into the print routine');
+	echo ('</pre>');
 	exit;
+	print ($output);	
 }
+
 /**
  * Display the poll's results for users with appropriate permissions.
  *

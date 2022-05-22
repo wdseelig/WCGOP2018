@@ -1,0 +1,43 @@
+.linkscontainer {
+ width: 100%;   
+}
+.linksleft {
+    display: inline-block;
+    width:  40%;
+    margin: auto;
+
+}
+.linksright {
+    display: inline-block;
+    width:  40%;
+    margin: auto;
+}
+.titlecenter {
+    width:      30%;
+    text-align: center;
+    border-bottom:    3px solid blue;
+    margin-left:    35%;
+    margin-right:   35%;
+    margin-bottom:  10px;
+    height:     20px;
+
+}
+hr.linerule {
+    width:      100%%;
+}
+div.namesloggedin {
+  -moz-column-count: 3;
+  -moz-column-gap: 10px;
+  -webkit-column-count: 3;
+  -webkit-column-gap: 10px;
+  column-count: 3;
+  column-gap: 10px;
+}
+div.voters {
+  -moz-column-count: 3;
+  -moz-column-gap: 10px;
+  -webkit-column-count: 3;
+  -webkit-column-gap: 10px;
+  column-count: 3;
+  column-gap: 10px;
+}

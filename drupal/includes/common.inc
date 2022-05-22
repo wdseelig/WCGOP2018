@@ -684,7 +684,10 @@ function drupal_goto($path = '', array $options = array(), $http_response_code =
   // We do not allow absolute URLs to be passed via $_GET, as this can be an attack vector.
   if (isset($_GET['destination']) && !url_is_external($_GET['destination'])) {
     $destination = drupal_parse_url($_GET['destination']);
-    $path = $destination['path'];
+    // Double check the path derived by drupal_parse_url() is not external.
+    if (!url_is_external($destination['path'])) {
+      $path = $destination['path'];
+    }
     $options['query'] = $destination['query'];
     $options['fragment'] = $destination['fragment'];
   }
@@ -1550,7 +1553,13 @@ function _filter_xss_attributes($attr) {
         // Attribute name, href for instance.
         if (preg_match('/^([-a-zA-Z]+)/', $attr, $match)) {
           $attrname = strtolower($match[1]);
-          $skip = ($attrname == 'style' || substr($attrname, 0, 2) == 'on');
+          $skip = (
+            $attrname == 'style' ||
+            substr($attrname, 0, 2) == 'on' ||
+            substr($attrname, 0, 1) == '-' ||
+            // Ignore long attributes to avoid unnecessary processing overhead.
+            strlen($attrname) > 96
+          );
           $working = $mode = 1;
           $attr = preg_replace('/^[-a-zA-Z]+/', '', $attr);
         }

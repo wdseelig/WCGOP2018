@@ -156,9 +156,6 @@ function theme_pdf_reader($variables) {
 
   switch ($variables['settings']['renderer']) {
     case 'google':
-    $path = drupal_get_path('module', 'pdf_reader');
-//    drupal_add_js("$path/js/wds.js");
-    drupal_add_css("$path/css/pdf_reader-viewer.css", array('weight' => 10));
       $output = '<iframe id="pdf_reader" src="//docs.google.com/viewer?embedded=true&url='
           . urlencode($file_url)
           . '" width="' . $variables['settings']['pdf_width']
@@ -168,16 +165,14 @@ function theme_pdf_reader($variables) {
       break;
 
     case 'direct':
-     $path = drupal_get_path('module', 'pdf_reader');
-    drupal_add_css("$path/css/pdf_reader-viewer.css", array('weight' => 1000));
-      $output = '<object id="pdf_reader" data="' . $file_url . '#view=Fit' . '#container="mycontainer"' .  ' " '
+      $output = '<object id="pdf_reader" data="' . $file_url . '#view=Fit' . '#container="#mycontainer"' . '" '
           . 'type="application/pdf' . '" '
           . 'width="' . $variables['settings']['pdf_width'] . '" '
           . 'height="' . $variables['settings']['pdf_height'] . '">'
           . '<embed src="' . $file_url . '#view=Fit' . '"'
           . 'width="' . $variables['settings']['pdf_width'] . '" '
           . 'height="' . $variables['settings']['pdf_height'] . '" '
-          . 'type="application/pdf">'
+          . 'type="application/vnd.adobe.pdfxml">'
           . '<p>' . t('It appears your Web browser is not configured to display PDF files. ')
           . l(t('Download adobe Acrobat '), 'http://www.adobe.com/products/reader.html')
           . ' ' . t('or') . ' ' . l(t('click here to download the PDF file.'), $file_url) . '</p>'

